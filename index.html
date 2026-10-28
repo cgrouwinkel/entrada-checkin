@@ -1,0 +1,704 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Entrada">
+<meta name="format-detection" content="telephone=no">
+<meta name="theme-color" content="#D9553B">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<style>img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Entrada Check-In</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one-screen app, sticky title bar, scrolling view, fixed iOS-style tab bar. */
+:root{
+  --bg:#EEF3F1; --surface:#FFFFFF; --fg:#1C2A31; --muted:#5E6F76; --line:#D3DDDA; --soft:#E2ECE8;
+  --accent:#D9553B; --accent-ink:#FFFFFF;
+  --ok:#2D8A58; --ok-soft:#DDF1E5; --warn:#B8780C; --warn-soft:#FBEFD2; --crit:#C23B2A; --crit-soft:#F9DEDA; --info:#2B6CB0; --info-soft:#DCE9F7;
+  --display:'Nunito',"Avenir Next",system-ui,sans-serif;
+  --body:'IBM Plex Sans',-apple-system,"Segoe UI",system-ui,sans-serif;
+  --radius:14px; --tabh:64px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#131B1F; --surface:#1C262B; --fg:#E9F0EE; --muted:#9DAEB3; --line:#2E3B41; --soft:#243036;
+  --accent:#F07A60; --accent-ink:#1A0E0B;
+  --ok:#5BC98A; --ok-soft:#1E3A2C; --warn:#E5A83B; --warn-soft:#3B2F14; --crit:#EF6F5F; --crit-soft:#3F1F1B; --info:#6FA8E8; --info-soft:#1D2F44;
+  color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#131B1F; --surface:#1C262B; --fg:#E9F0EE; --muted:#9DAEB3; --line:#2E3B41; --soft:#243036;
+  --accent:#F07A60; --accent-ink:#1A0E0B;
+  --ok:#5BC98A; --ok-soft:#1E3A2C; --warn:#E5A83B; --warn-soft:#3B2F14; --crit:#EF6F5F; --crit-soft:#3F1F1B; --info:#6FA8E8; --info-soft:#1D2F44;
+  color-scheme:dark }
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.45;-webkit-text-size-adjust:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;line-height:1.15}
+button{font:inherit;color:inherit;cursor:pointer}
+input,select,textarea{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;min-width:0}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+textarea{min-height:72px;resize:vertical}
+.num{font-variant-numeric:tabular-nums}
+
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--surface);border-bottom:1px solid var(--line);
+  padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand .mark{width:34px;height:34px;border-radius:10px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-family:var(--display);font-weight:800;flex:none}
+.brand h1{font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand small{display:block;color:var(--muted);font-size:12px;font-weight:500;font-family:var(--body)}
+.lang{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;flex:none}
+.lang button{background:none;border:0;padding:6px 10px;font-size:13px;font-weight:600;color:var(--muted)}
+.lang button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+
+main{padding-block:16px calc(var(--tabh) + env(safe-area-inset-bottom,0px) + 16px);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  max-width:860px;margin:0 auto}
+.view{display:flex;flex-direction:column;gap:16px}
+.view h2{font-size:24px}
+.sub{color:var(--muted);font-size:14px;margin:0}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.spread{justify-content:space-between}
+.grow{flex:1;min-width:0}
+
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px}
+.tile .v{font-family:var(--display);font-weight:800;font-size:28px;line-height:1}
+.tile .k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:6px;font-weight:600}
+.tile.ok .v{color:var(--ok)} .tile.warn .v{color:var(--warn)} .tile.crit .v{color:var(--crit)} .tile.info .v{color:var(--info)}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+.card h3{font-size:16px;margin-bottom:8px}
+.banner{background:var(--warn-soft);border:1px solid var(--warn);color:var(--fg);border-radius:12px;padding:10px 14px;font-size:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+.list{display:flex;flex-direction:column;gap:8px}
+.item{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;display:flex;gap:12px;align-items:center}
+.item.tap{cursor:pointer}
+.avatar{width:42px;height:42px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:14px;flex:none;color:var(--fg)}
+.avatar.in{background:var(--ok-soft);color:var(--ok)} .avatar.out{background:var(--info-soft);color:var(--info)} .avatar.absent{background:var(--crit-soft);color:var(--crit)}
+.item .name{font-weight:600}
+.item .meta{font-size:13px;color:var(--muted)}
+.item .actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--soft);color:var(--muted);white-space:nowrap}
+.pill.in{background:var(--ok-soft);color:var(--ok)} .pill.out{background:var(--info-soft);color:var(--info)} .pill.absent{background:var(--crit-soft);color:var(--crit)} .pill.qr{background:var(--warn-soft);color:var(--warn)}
+.chip{display:inline-block;font-size:12px;padding:2px 8px;border-radius:6px;background:var(--soft);color:var(--fg);margin:2px 4px 0 0}
+
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 14px;font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.btn.danger{color:var(--crit);border-color:var(--crit)}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--accent)}
+.btn.sm{padding:6px 10px;font-size:13px}
+button,label.btn,a{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+@media (pointer:coarse){.btn{min-height:44px}.btn.sm{min-height:40px;padding:8px 12px;font-size:14px}.item .actions .btn{min-width:88px;justify-content:center}}
+html{overscroll-behavior-y:none}
+.btn.block{width:100%;justify-content:center;padding:13px}
+.btn:disabled{opacity:.5;cursor:default}
+
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form .full{grid-column:1/-1}
+@media (max-width:520px){.form{grid-template-columns:1fr}}
+.contact{border:1px solid var(--line);border-radius:10px;padding:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.contact .full{grid-column:1/-1}
+.check{display:flex;align-items:center;gap:8px;font-size:14px}
+.check input{width:auto}
+.radio{display:flex;flex-direction:column;gap:6px}
+.radio label{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:10px;cursor:pointer}
+.radio input{width:auto}
+.radio label:has(input:checked){border-color:var(--accent);background:var(--soft)}
+
+/* Scanner */
+.sheet .scanbox{aspect-ratio:16/10}
+.scanbox{position:relative;background:#000;border-radius:var(--radius);overflow:hidden;aspect-ratio:4/3;max-width:100%;display:grid;place-items:center;color:#fff}
+.scanbox video{width:100%;height:100%;object-fit:cover}
+.scanbox .frame{position:absolute;inset:18%;border:3px solid rgba(255,255,255,.85);border-radius:16px;pointer-events:none}
+.scanbox .idle{text-align:center;padding:20px;font-size:14px;color:#cfd8d6}
+.result{display:flex;flex-direction:column;gap:10px}
+
+/* QR cards */
+.qrcard{background:var(--surface);border:2px solid var(--fg);border-radius:16px;padding:18px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;max-width:320px;margin:0 auto}
+.qrcard .qr{background:#fff;padding:10px;border-radius:10px}
+.qrcard .qr img,.qrcard .qr canvas{display:block;max-width:100%}
+.qrcard .cn{font-family:var(--display);font-weight:800;font-size:20px}
+.qrcard .org{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.qrcard .tok{font-size:11px;color:var(--muted);word-break:break-all;font-family:ui-monospace,Menlo,monospace}
+.qrgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.qrgrid .qrcard{max-width:none}
+
+/* Log */
+.daynav{display:flex;align-items:center;gap:8px}
+.daynav input{flex:1}
+.entry{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.entry:first-of-type{border-top:0}
+.entry .t{font-family:var(--display);font-weight:800;font-size:17px}
+.entry .who{font-size:13px;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}
+th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.tablewrap{overflow-x:auto}
+
+/* Tab bar */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:9;background:var(--surface);border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom,0px);padding-left:max(0px,env(safe-area-inset-left,0px));padding-right:max(0px,env(safe-area-inset-right,0px));
+  display:flex;height:calc(var(--tabh) + env(safe-area-inset-bottom,0px))}
+.tabbar button{flex:1;background:none;border:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;font-weight:600;color:var(--muted);padding:6px 2px}
+.tabbar button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.tabbar button[aria-current="page"]{color:var(--accent)}
+
+/* Sheet */
+.backdrop{position:fixed;inset:0;background:rgba(10,20,24,.5);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);width:100%;max-width:640px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;
+  padding-block:14px calc(20px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:14px}
+@media (min-width:700px){.backdrop{align-items:center}.sheet{border-radius:18px;max-height:88vh}}
+.sheet header{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.sheet h3{font-size:19px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tabh) + env(safe-area-inset-bottom,0px) + 12px);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:14px;font-weight:600;z-index:30;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.mono{font-family:ui-monospace,Menlo,monospace;font-size:12px;white-space:pre;overflow:auto;background:var(--soft);padding:10px;border-radius:10px;max-height:40vh}
+.empty{text-align:center;color:var(--muted);padding:28px 10px;font-size:14px}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:up .18s ease-out}@keyframes up{from{transform:translateY(24px);opacity:.6}}}
+</style>
+
+<header class="topbar">
+  <div class="brand"><div class="mark">E</div><div><h1 id="orgTitle">Entrada</h1><small id="todayLabel"></small></div></div>
+  <div class="lang" role="group" aria-label="Idioma"><button id="langEs" aria-pressed="true">ES</button><button id="langEn" aria-pressed="false">EN</button></div>
+</header>
+
+<main>
+  <section class="view" id="view-today"></section>
+  <section class="view" id="view-children" hidden></section>
+  <section class="view" id="view-signs" hidden></section>
+  <section class="view" id="view-log" hidden></section>
+  <section class="view" id="view-more" hidden></section>
+</main>
+
+<nav class="tabbar" id="tabbar">
+  <button data-tab="today"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span data-t="today"></span></button>
+  <button data-tab="children"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 20a5 5 0 0 1 6-4.5"/></svg><span data-t="children"></span></button>
+  <button data-tab="signs"><svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><rect x="8" y="8" width="3" height="3"/><rect x="13" y="8" width="3" height="3"/><rect x="8" y="13" width="3" height="3"/><path d="M13 13h3v3"/></svg><span data-t="signs"></span></button>
+  <button data-tab="log"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="17" rx="2"/><path d="M8 2v4M16 2v4M4 9h16M8 13h5M8 17h8"/></svg><span data-t="log"></span></button>
+  <button data-tab="more"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.5"/><circle cx="5" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg><span data-t="more"></span></button>
+</nav>
+
+<div id="sheetHost"></div>
+<div id="toastHost"></div>
+<canvas id="scanCanvas" hidden></canvas>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+/* =========================================================
+   Entrada — standalone childcare check-in / check-out app
+   Data model (localStorage, key entrada.v1):
+     settings { lang, org }
+     children[] { id, first, last, dob, status, classroom, allergies, meds, diet, notes, tags[], contacts[], qrToken, sample }
+       contacts[] { id, name, relation, phone, email, authorized }
+     log[] { id, childId, date 'YYYY-MM-DD', inAt ISO|null, outAt ISO|null, inBy, outBy, inMethod, outMethod, absent, note }
+   ========================================================= */
+const LS_KEY='entrada.v1';
+const STR={
+es:{today:'Hoy',children:'Niños',scan:'Escanear',log:'Registro',more:'Más',enrolled:'Inscritos',inNow:'Presentes',wentHome:'Ya salieron',absent:'Ausentes',notYet:'Sin llegar',
+checkIn:'Entrada',checkOut:'Salida',markAbsent:'Ausente',undoAbsent:'Quitar ausencia',search:'Buscar por nombre',addChild:'Agregar niño',editChild:'Editar niño',
+firstName:'Nombre',lastName:'Apellido',dob:'Fecha de nacimiento',status:'Estatus',active:'Activo',inactive:'Inactivo',classroom:'Salón / grupo',allergies:'Alergias',meds:'Medicamento',
+diet:'Restricciones de dieta',notes:'Notas',tags:'Etiquetas (separadas por coma)',contacts:'Contactos',addContact:'Agregar contacto',contactName:'Nombre',relation:'Parentesco',phone:'Teléfono',email:'Correo',
+authorized:'Autorizado para recoger',save:'Guardar',cancel:'Cancelar',delete:'Eliminar',deleteChild:'Eliminar niño',deleteConfirm:'¿Eliminar a {name} y todo su historial? Esto no se puede deshacer.',
+qrCard:'Tarjeta QR',regenQr:'Generar código nuevo',qrHint:'Imprime o envía esta tarjeta a los padres. Al escanearla se registra la entrada o la salida.',
+scanTitle:'Escanear tarjeta',startCamera:'Abrir cámara',stopCamera:'Cerrar cámara',takePhoto:'Tomar foto del código',scanHelp:'Apunta la cámara al código QR de la tarjeta del niño.',
+noCamera:'La cámara en vivo no está disponible aquí. Usa "Tomar foto del código".',unknownCode:'Este código no pertenece a ningún niño inscrito.',notFoundInPhoto:'No se encontró un código QR en la foto.',
+whoDrop:'¿Quién lo trae?',whoPick:'¿Quién lo recoge?',time:'Hora',note:'Nota',confirmIn:'Registrar entrada',confirmOut:'Registrar salida',other:'Otra persona',otherName:'Nombre de la persona',
+byQr:'QR',byManual:'Manual',monthReport:'Resumen del mes',exportCsv:'Exportar CSV del mes',hours:'Horas',days:'Días',noEntries:'Sin registros este día.',addEntry:'Agregar tiempo',
+editEntry:'Editar registro',inTime:'Hora de entrada',outTime:'Hora de salida',droppedBy:'Trae',pickedBy:'Recoge',deleteEntry:'Eliminar registro',settings:'Configuración',orgName:'Nombre del negocio',
+language:'Idioma',backup:'Respaldo',exportJson:'Exportar respaldo',importJson:'Restaurar respaldo',importDone:'Respaldo restaurado',importBad:'El archivo no es un respaldo válido.',
+storedHere:'Los datos se guardan solo en este dispositivo y navegador. Haz un respaldo con frecuencia.',clearSamples:'Borrar datos de ejemplo',resetAll:'Borrar todo',
+resetConfirm:'¿Borrar todos los niños y registros? Esto no se puede deshacer.',sampleBanner:'Estos niños son datos de ejemplo para probar la app.',allCards:'Tarjetas QR de todos',
+copy:'Copiar',copied:'Copiado',fileReady:'Archivo listo',fileHint:'Si la descarga no empezó, copia el texto y pégalo en un archivo nuevo.',stillIn:'Sigue adentro',sampleTag:'Ejemplo',
+present:'Presente',gone:'Se fue',noChildren:'Aún no hay niños. Toca "Agregar niño".',required:'Nombre y apellido son obligatorios.',saved:'Guardado',deleted:'Eliminado',
+checkedIn:'Entrada registrada',checkedOut:'Salida registrada',in:'Entró',out:'Salió',age:'Edad',yes:'Sí',no:'No',child:'Niño',date:'Fecha',method:'Método',
+onlyAuthorized:'Solo se muestran contactos autorizados para recoger.',noActive:'Ningún niño activo.',allChildren:'Todos',activeOnly:'Solo activos',total:'Total',selectChild:'Niño',
+backupHint:'El respaldo incluye niños, contactos y todo el registro.',cards:'Tarjetas',scanning:'Buscando código…',scanFound:'Código detectado',
+clearSamplesConfirm:'¿Borrar los niños de ejemplo y sus registros?',months:'meses',years:'años',yr:'a',mo:'m',pin:'PIN del personal',pinHint:'Con un PIN, las pestañas Niños, Registro y Más piden el código. La pantalla Hoy y Escanear quedan libres para entregar la tableta a los padres.',setPin:'Guardar PIN',removePin:'Quitar PIN',enterPin:'Escribe el PIN',unlock:'Desbloquear',wrongPin:'PIN incorrecto',lockNow:'Bloquear ahora',pinSaved:'PIN guardado',pinRemoved:'PIN eliminado',pinFormat:'El PIN debe tener de 4 a 6 números.',scanToSign:'Escanea la tarjeta QR del niño para firmar la {kind}.',recordManually:'Registrar sin tarjeta',qrVerified:'Tarjeta QR verificada',noCard:'Sin tarjeta',wrongCard:'Esta tarjeta es de {name}.',useThisCard:'Usar esta tarjeta',entradaLower:'entrada',salidaLower:'salida',reports:'Reportes',period:'Periodo',thisDay:'Este día',thisMonth:'Este mes',customRange:'Otro rango',from:'Desde',to:'Hasta',noRecord:'Sin registro',presentDays:'Días presente',absentDays:'Días ausente',roster:'Lista del día',detail:'Detalle',grid:'Cuadrícula',summary:'Resumen',report:'Reporte de asistencia',generated:'Generado',preparing:'Preparando el archivo…',exportFail:'No se pudo generar el archivo. Revisa la conexión a internet e inténtalo de nuevo.',missingOut:'Falta salida',activeDays:'días con actividad',kidsCount:'niños',downloadNA:'La descarga no está disponible en esta vista. Abre la app desde el archivo entrada-standalone.html.',who:'Firma',signs:'Letreros',signsTitle:'Letreros QR de entrada y salida',signsSub:'Dos letreros en la pared. Los padres los escanean con la cámara de su teléfono y llenan el formulario. Sus firmas llegan aquí al sincronizar.',
+inLink:'Enlace del formulario · Entrada',outLink:'Enlace del formulario · Salida',outAuto:'Se llena solo a partir del enlace de Entrada.',csvLink:'Enlace CSV de la hoja de respuestas',signIn:'ENTRADA',signOut:'SALIDA',signInEn:'Sign in',signOutEn:'Sign out',
+signStep:'Escanea con la cámara de tu teléfono, marca a tu hijo y escribe tu nombre.',signStepEn:'Scan with your phone camera, check your child and type your name.',signsPdf:'Descargar letreros (PDF)',needLinks:'Pega el enlace de Entrada para generar los letreros.',
+sync:'Sincronizar',syncing:'Sincronizando…',lastSync:'Última sincronización',never:'nunca',syncDone:'{n} firmas nuevas',syncNone:'Sin firmas nuevas. Google puede tardar hasta 5 minutos en mostrar una firma.',syncFail:'No se pudo leer la hoja ahora. Se volverá a intentar en 1 minuto; revisa la conexión a internet.',syncBlocked:'Esta vista no puede leer la hoja directamente. Usa "Subir CSV" o abre entrada-standalone.html.',
+uploadCsv:'Subir CSV de respuestas',unmatched:'Nombres que no coinciden con ningún niño',setup:'Cómo crear el formulario (una sola vez, 15 min)',childList:'Lista de niños para pegar en el formulario',saveLinks:'Guardar enlaces',linksSaved:'Enlaces guardados',
+badDate:'Fechas en formato día/mes detectadas: cambia la configuración regional de la hoja a Estados Unidos.',privacy:'El enlace CSV publicado es privado solo mientras nadie más lo tenga. No lo compartas.',
+step1:'Entra a forms.google.com con la cuenta de Google del negocio y crea un formulario en blanco. Título: "Entrada y Salida".',
+step2:'Pregunta 1 · "Tipo" · Opción múltiple · opciones Entrada y Salida · Obligatoria.',
+step3:'Pregunta 2 · "Niño" · Casillas de verificación (así los hermanos firman juntos) · pega la lista de niños de abajo · Obligatoria.',
+step4:'Pregunta 3 · "Su nombre" · Respuesta corta · Obligatoria. Pregunta 4 · "Nota" · Respuesta corta · Opcional.',
+step5:'Pestaña Respuestas · Vincular con Hojas de cálculo · Crear una hoja nueva.',
+step6:'En la hoja: Archivo · Configuración · Configuración regional: Estados Unidos. Luego Archivo · Compartir · Publicar en la web · elige la pestaña de respuestas y "Valores separados por comas (.csv)" · Publicar · copia el enlace y pégalo abajo.',
+step7:'En el formulario: menú ⋮ · Obtener vínculo prellenado · marca "Entrada" en Tipo · Obtener vínculo · Copiar. Pégalo abajo; el de Salida se crea solo.',
+step8:'Toca "Guardar enlaces", descarga los letreros en PDF, imprímelos y pégalos en la entrada. Las firmas pueden tardar hasta 5 minutos en aparecer.',
+viaForm:'Letrero',shareSave:'Guardar en Archivos o compartir',shareHint:'Elige "Guardar en Archivos" para guardarlo en el iPad, o envíalo por correo o AirDrop.',downloadFile:'Descargar',welcome:'Bienvenida a Entrada',welcomeHint:'Para cargar a tus niños y la conexión con los letreros, toca "Restaurar respaldo" y elige el archivo entrada-datos-iniciales.json. También puedes agregar niños uno por uno.',lastBackup:'Último respaldo',backupOld:'Han pasado {n} días desde el último respaldo. Haz uno en Más → Exportar respaldo.'},
+en:{today:'Today',children:'Children',scan:'Scan',log:'Log',more:'More',enrolled:'Enrolled',inNow:'Checked in',wentHome:'Gone home',absent:'Absent',notYet:'Not arrived',
+checkIn:'Check in',checkOut:'Check out',markAbsent:'Absent',undoAbsent:'Undo absent',search:'Search by name',addChild:'Add child',editChild:'Edit child',
+firstName:'First name',lastName:'Last name',dob:'Date of birth',status:'Status',active:'Active',inactive:'Inactive',classroom:'Classroom / group',allergies:'Allergies',meds:'Medication',
+diet:'Dietary restrictions',notes:'Notes',tags:'Tags (comma separated)',contacts:'Contacts',addContact:'Add contact',contactName:'Name',relation:'Relationship',phone:'Phone',email:'Email',
+authorized:'Authorized for pickup',save:'Save',cancel:'Cancel',delete:'Delete',deleteChild:'Delete child',deleteConfirm:'Delete {name} and all of their history? This cannot be undone.',
+qrCard:'QR card',regenQr:'Generate new code',qrHint:'Print or send this card to the parents. Scanning it records the check-in or check-out.',
+scanTitle:'Scan a card',startCamera:'Open camera',stopCamera:'Close camera',takePhoto:'Take a photo of the code',scanHelp:"Point the camera at the QR code on the child's card.",
+noCamera:'Live camera is not available here. Use "Take a photo of the code".',unknownCode:'This code does not belong to any enrolled child.',notFoundInPhoto:'No QR code was found in the photo.',
+whoDrop:'Who is dropping off?',whoPick:'Who is picking up?',time:'Time',note:'Note',confirmIn:'Record check-in',confirmOut:'Record check-out',other:'Someone else',otherName:"Person's name",
+byQr:'QR',byManual:'Manual',monthReport:'Month summary',exportCsv:'Export month as CSV',hours:'Hours',days:'Days',noEntries:'No entries on this day.',addEntry:'Add time',
+editEntry:'Edit entry',inTime:'Check-in time',outTime:'Check-out time',droppedBy:'Dropped off by',pickedBy:'Picked up by',deleteEntry:'Delete entry',settings:'Settings',orgName:'Business name',
+language:'Language',backup:'Backup',exportJson:'Export backup',importJson:'Restore backup',importDone:'Backup restored',importBad:'That file is not a valid backup.',
+storedHere:'Data is stored only on this device and browser. Back it up often.',clearSamples:'Remove sample data',resetAll:'Erase everything',
+resetConfirm:'Erase all children and records? This cannot be undone.',sampleBanner:'These children are sample data so you can try the app.',allCards:'QR cards for everyone',
+copy:'Copy',copied:'Copied',fileReady:'File ready',fileHint:'If the download did not start, copy the text and paste it into a new file.',stillIn:'Still here',sampleTag:'Sample',
+present:'Present',gone:'Gone home',noChildren:'No children yet. Tap "Add child".',required:'First and last name are required.',saved:'Saved',deleted:'Deleted',
+checkedIn:'Check-in recorded',checkedOut:'Check-out recorded',in:'In',out:'Out',age:'Age',yes:'Yes',no:'No',child:'Child',date:'Date',method:'Method',
+onlyAuthorized:'Only contacts authorized for pickup are shown.',noActive:'No active children.',allChildren:'All',activeOnly:'Active only',total:'Total',selectChild:'Child',
+backupHint:'The backup includes children, contacts and the full log.',cards:'Cards',scanning:'Looking for a code…',scanFound:'Code detected',
+clearSamplesConfirm:'Remove the sample children and their records?',months:'months',years:'years',yr:'y',mo:'m',pin:'Staff PIN',pinHint:'With a PIN set, the Children, Log and More tabs ask for the code. Today and Scan stay open so the tablet can be handed to parents.',setPin:'Save PIN',removePin:'Remove PIN',enterPin:'Enter PIN',unlock:'Unlock',wrongPin:'Wrong PIN',lockNow:'Lock now',pinSaved:'PIN saved',pinRemoved:'PIN removed',pinFormat:'The PIN must be 4 to 6 digits.',scanToSign:"Scan the child's QR card to sign the {kind}.",recordManually:'Record without card',qrVerified:'QR card verified',noCard:'No card',wrongCard:'This card belongs to {name}.',useThisCard:'Use this card',entradaLower:'check-in',salidaLower:'check-out',reports:'Reports',period:'Period',thisDay:'This day',thisMonth:'This month',customRange:'Custom range',from:'From',to:'To',noRecord:'No record',presentDays:'Days present',absentDays:'Days absent',roster:'Day roster',detail:'Detail',grid:'Grid',summary:'Summary',report:'Attendance report',generated:'Generated',preparing:'Preparing the file…',exportFail:'The file could not be generated. Check the internet connection and try again.',missingOut:'Missing check-out',activeDays:'days with activity',kidsCount:'children',downloadNA:'Downloads are not available in this view. Open the app from the entrada-standalone.html file.',who:'Signed by',signs:'Signs',signsTitle:'Sign-in and sign-out QR signs',signsSub:'Two signs on the wall. Parents scan them with their phone camera and fill in the form. Their signatures arrive here when you sync.',
+inLink:'Form link · Sign in',outLink:'Form link · Sign out',outAuto:'Filled in automatically from the sign-in link.',csvLink:'CSV link of the responses sheet',signIn:'SIGN IN',signOut:'SIGN OUT',signInEn:'Entrada',signOutEn:'Salida',
+signStep:'Scan with your phone camera, check your child and type your name.',signStepEn:'Escanea con la cámara de tu teléfono, marca a tu hijo y escribe tu nombre.',signsPdf:'Download signs (PDF)',needLinks:'Paste the sign-in link to generate the signs.',
+sync:'Sync',syncing:'Syncing…',lastSync:'Last sync',never:'never',syncDone:'{n} new signatures',syncNone:'No new signatures. Google can take up to 5 minutes to show a new one.',syncFail:'The sheet could not be read right now. It will try again in 1 minute; check the internet connection.',syncBlocked:'This view cannot read the sheet directly. Use "Upload CSV" or open entrada-standalone.html.',
+uploadCsv:'Upload responses CSV',unmatched:'Names that do not match any child',setup:'How to create the form (one time, 15 min)',childList:'Child list to paste into the form',saveLinks:'Save links',linksSaved:'Links saved',
+badDate:'Day/month dates detected: change the sheet locale to United States.',privacy:'The published CSV link stays private only while nobody else has it. Do not share it.',
+step1:'Go to forms.google.com with the business Google account and create a blank form. Title: "Entrada y Salida".',
+step2:'Question 1 · "Tipo" · Multiple choice · options Entrada and Salida · Required.',
+step3:'Question 2 · "Niño" · Checkboxes (so siblings sign together) · paste the child list below · Required.',
+step4:'Question 3 · "Su nombre" · Short answer · Required. Question 4 · "Nota" · Short answer · Optional.',
+step5:'Responses tab · Link to Sheets · Create a new spreadsheet.',
+step6:'In the sheet: File · Settings · Locale: United States. Then File · Share · Publish to web · pick the responses tab and "Comma-separated values (.csv)" · Publish · copy the link and paste it below.',
+step7:'In the form: ⋮ menu · Get pre-filled link · choose "Entrada" for Tipo · Get link · Copy. Paste it below; the sign-out link is made automatically.',
+step8:'Tap "Save links", download the signs as PDF, print them and post them at the entrance. Signatures can take up to 5 minutes to appear.',
+viaForm:'Sign',shareSave:'Save to Files or share',shareHint:'Choose "Save to Files" to keep it on the iPad, or send it by email or AirDrop.',downloadFile:'Download',welcome:'Welcome to Entrada',welcomeHint:'To load your children and the sign connection, tap "Restore backup" and choose the file entrada-datos-iniciales.json. You can also add children one by one.',lastBackup:'Last backup',backupOld:'It has been {n} days since the last backup. Make one in More → Export backup.'}
+};
+const t=(k,v)=>{let s=(STR[state.settings.lang]||STR.es)[k]||k; if(v) for(const n in v) s=s.replace('{'+n+'}',v[n]); return s;};
+const $=(s,r=document)=>r.querySelector(s);
+const uid=()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const locale=()=>state.settings.lang==='en'?'en-US':'es-MX';
+const pad=n=>String(n).padStart(2,'0');
+const dateKey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const todayKey=()=>dateKey(new Date());
+const fromKey=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d);};
+const fmtDate=k=>fromKey(k).toLocaleDateString(locale(),{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+const fmtTime=iso=>iso?new Date(iso).toLocaleTimeString(locale(),{hour:'numeric',minute:'2-digit'}):'—';
+const toHHMM=iso=>{const d=new Date(iso);return pad(d.getHours())+':'+pad(d.getMinutes());};
+const combine=(key,hhmm)=>{const d=fromKey(key);const [h,m]=hhmm.split(':').map(Number);d.setHours(h,m,0,0);return d.toISOString();};
+const hoursBetween=(a,b)=>(a&&b)?Math.max(0,(new Date(b)-new Date(a))/36e5):0;
+function ageText(dob){ if(!dob) return ''; const b=new Date(dob+'T00:00:00'),n=new Date(); let y=n.getFullYear()-b.getFullYear(),m=n.getMonth()-b.getMonth(); if(n.getDate()<b.getDate())m--; if(m<0){y--;m+=12;} return `${y}${t('yr')} ${m}${t('mo')}`; }
+const fullName=c=>`${c.last}, ${c.first}`;
+const initials=c=>((c.first[0]||'')+(c.last[0]||'')).toUpperCase();
+
+/* ---------- state ---------- */
+let state=load();
+function blank(){return {version:1,settings:{lang:'es',org:''},children:[],log:[]};}
+function load(){ try{const s=localStorage.getItem(LS_KEY); if(s){const o=JSON.parse(s); if(o&&o.children){ const st=Object.assign(blank(),o); // first run after the real roster was added: replace sample-only data
+  if(!st.rosterLoaded&&st.children.every(c=>c.sample)){ const r=seed(); r.settings.lang=st.settings.lang||r.settings.lang; return r; } return st; } } }catch(e){} return seed(); }
+function save(){ try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){} }
+function newToken(){ return 'ENTRADA-'+uid().toUpperCase()+'-'+Math.random().toString(36).slice(2,8).toUpperCase(); }
+function seed(){ const s=blank(); s.rosterLoaded=true; return s; }
+
+const childById=id=>state.children.find(c=>c.id===id);
+const entriesFor=(childId,key)=>state.log.filter(e=>e.childId===childId&&e.date===key).sort((a,b)=>(a.inAt||'').localeCompare(b.inAt||''));
+const openEntry=(childId,key)=>entriesFor(childId,key).find(e=>e.inAt&&!e.outAt);
+function statusOf(childId,key){ const es=entriesFor(childId,key); if(es.some(e=>e.absent)) return 'absent'; if(es.some(e=>e.inAt&&!e.outAt)) return 'in'; if(es.some(e=>e.outAt)) return 'out'; return 'pending'; }
+
+/* ---------- UI plumbing ---------- */
+let tab='today', logDay=todayKey(), childFilter='', childActiveOnly=true, reportMode='month', reportFrom='', reportTo='';
+function toast(msg){ const h=$('#toastHost'); h.innerHTML=`<div class="toast">${esc(msg)}</div>`; clearTimeout(toast.tm); toast.tm=setTimeout(()=>h.innerHTML='',1800); }
+function sheet(html,onMount){ const host=$('#sheetHost'); host.innerHTML=`<div class="backdrop" id="backdrop"><div class="sheet" role="dialog" aria-modal="true">${html}</div></div>`;
+  $('#backdrop').addEventListener('click',e=>{if(e.target.id==='backdrop')closeSheet();}); host.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',closeSheet)); if(onMount) onMount(host); }
+function closeSheet(){ $('#sheetHost').innerHTML=''; }
+function confirmBox(msg,onYes){ sheet(`<header><h3>${esc(t('delete'))}</h3></header><p style="margin:0">${esc(msg)}</p><div class="row"><button class="btn danger grow" id="cYes">${esc(t('yes'))}</button><button class="btn grow" data-close>${esc(t('no'))}</button></div>`,h=>{$('#cYes',h).onclick=()=>{closeSheet();onYes();};}); }
+let unlocked=false; const LOCKED=['children','log','more'];
+function setTab(name){ if(LOCKED.includes(name)&&state.settings.pin&&!unlocked){ askPin(()=>{unlocked=true;setTab(name);}); return; } tab=name; document.querySelectorAll('.view').forEach(v=>v.hidden=v.id!=='view-'+name); document.querySelectorAll('#tabbar button').forEach(b=>{ if(b.dataset.tab===name) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); }); if(location.hash!=='#'+name){try{history.replaceState(null,'','#'+name);}catch(e){}} render(); window.scrollTo(0,0); }
+document.querySelectorAll('#tabbar button').forEach(b=>b.addEventListener('click',()=>setTab(b.dataset.tab)));
+window.addEventListener('hashchange',()=>{const h=location.hash.slice(1); if(['today','children','signs','log','more'].includes(h)&&h!==tab) setTab(h);});
+$('#langEs').onclick=()=>{state.settings.lang='es';save();render();};
+$('#langEn').onclick=()=>{state.settings.lang='en';save();render();};
+
+function askPin(onOk){ sheet(`<header><h3>${esc(t('enterPin'))}</h3><button class="btn sm" data-close>✕</button></header><input id="pinIn" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" style="font-size:28px;text-align:center;letter-spacing:.4em"><button class="btn block primary" id="pinGo">${esc(t('unlock'))}</button>`,h=>{ const i=$('#pinIn',h); i.focus(); const go=()=>{ if(i.value===state.settings.pin){ closeSheet(); onOk(); } else { toast(t('wrongPin')); i.value=''; i.focus(); } }; $('#pinGo',h).onclick=go; i.onkeydown=e=>{if(e.key==='Enter')go();}; }); }
+function render(){
+  $('#orgTitle').textContent=state.settings.org||'Entrada';
+  $('#todayLabel').textContent=fmtDate(todayKey());
+  $('#langEs').setAttribute('aria-pressed',state.settings.lang!=='en'); $('#langEn').setAttribute('aria-pressed',state.settings.lang==='en');
+  document.querySelectorAll('[data-t]').forEach(el=>el.textContent=t(el.dataset.t));
+  ({today:renderToday,children:renderChildren,signs:renderSigns,log:renderLog,more:renderMore})[tab]();
+}
+function sampleBanner(){ return state.children.some(c=>c.sample)?`<div class="banner"><span class="grow">${esc(t('sampleBanner'))}</span><button class="btn sm" id="clearSamples">${esc(t('clearSamples'))}</button></div>`:''; }
+function bindSampleBanner(){ const b=$('#clearSamples'); if(b) b.onclick=()=>confirmBox(t('clearSamplesConfirm'),clearSamples); }
+function clearSamples(){ const ids=new Set(state.children.filter(c=>c.sample).map(c=>c.id)); state.children=state.children.filter(c=>!ids.has(c.id)); state.log=state.log.filter(e=>!ids.has(e.childId)); save(); render(); toast(t('deleted')); }
+
+/* ---------- TODAY ---------- */
+function renderToday(){
+  const tk=todayKey(); const active=state.children.filter(c=>c.status==='active').sort((a,b)=>fullName(a).localeCompare(fullName(b)));
+  const st=active.map(c=>statusOf(c.id,tk)); const n=s=>st.filter(x=>x===s).length;
+  const v=$('#view-today');
+  const bk=state.settings.lastBackup, bkDays=bk?Math.floor((fromKey(tk)-fromKey(bk))/864e5):null;
+  const welcome=!state.children.length?`<div class="card result"><h3>${esc(t('welcome'))}</h3><p class="sub">${esc(t('welcomeHint'))}</p><div class="row"><label class="btn primary grow" style="justify-content:center">⇧ ${esc(t('importJson'))}<input type="file" id="impWelcome" hidden></label><button class="btn grow" id="addFirst">+ ${esc(t('addChild'))}</button></div></div>`:'';
+  const bkWarn=state.children.length&&bkDays!==null&&bkDays>=7?`<div class="banner">${esc(t('backupOld',{n:bkDays}))}</div>`:'';
+  v.innerHTML=`${sampleBanner()}${welcome}${bkWarn}
+  <div><h2>${esc(t('today'))}</h2><p class="sub">${esc(fmtDate(tk))}</p></div>${syncBar()}
+  <div class="tiles">
+    <div class="tile"><div class="v num">${active.length}</div><div class="k">${esc(t('enrolled'))}</div></div>
+    <div class="tile ok"><div class="v num">${n('in')}</div><div class="k">${esc(t('inNow'))}</div></div>
+    <div class="tile info"><div class="v num">${n('out')}</div><div class="k">${esc(t('wentHome'))}</div></div>
+    <div class="tile crit"><div class="v num">${n('absent')}</div><div class="k">${esc(t('absent'))}</div></div>
+    <div class="tile warn"><div class="v num">${n('pending')}</div><div class="k">${esc(t('notYet'))}</div></div>
+  </div>
+  <div class="list">${active.length?active.map(c=>{
+    const s=statusOf(c.id,tk); const es=entriesFor(c.id,tk); const last=es[es.length-1];
+    const meta=s==='in'?`${t('in')} ${fmtTime(last.inAt)} · ${esc(last.inBy||'')}`:s==='out'?`${t('in')} ${fmtTime(last.inAt)} → ${t('out')} ${fmtTime(last.outAt)} · ${esc(last.outBy||'')}`:s==='absent'?esc(t('absent')):esc(c.classroom||'');
+    const pill=s==='in'?`<span class="pill in">${esc(t('present'))}</span>`:s==='out'?`<span class="pill out">${esc(t('gone'))}</span>`:s==='absent'?`<span class="pill absent">${esc(t('absent'))}</span>`:`<span class="pill">${esc(t('notYet'))}</span>`;
+    const btns=s==='in'?`<button class="btn sm primary" data-out="${c.id}">${esc(t('checkOut'))}</button>`:s==='absent'?`<button class="btn sm" data-unabs="${c.id}">${esc(t('undoAbsent'))}</button>`:`<button class="btn sm ok" data-in="${c.id}">${esc(t('checkIn'))}</button>${s==='pending'?`<button class="btn sm" data-abs="${c.id}">${esc(t('markAbsent'))}</button>`:''}`;
+    return `<div class="item"><div class="avatar ${s}">${esc(initials(c))}</div><div class="grow"><div class="name">${esc(fullName(c))} ${pill}</div><div class="meta">${meta}</div></div><div class="actions">${btns}</div></div>`;
+  }).join(''):`<div class="empty">${esc(t('noActive'))}</div>`}</div>`;
+  bindSampleBanner(); bindSyncBar(v);
+  const iw=$('#impWelcome',v); if(iw) iw.onchange=e=>{ importBackupFile(e.target.files[0]); e.target.value=''; };
+  const af=$('#addFirst',v); if(af) af.onclick=()=>editChild(null);
+  v.querySelectorAll('[data-in]').forEach(b=>b.onclick=()=>startCheck(b.dataset.in,'in'));
+  v.querySelectorAll('[data-out]').forEach(b=>b.onclick=()=>startCheck(b.dataset.out,'out'));
+  v.querySelectorAll('[data-abs]').forEach(b=>b.onclick=()=>{state.log.push({id:uid(),childId:b.dataset.abs,date:tk,inAt:null,outAt:null,inBy:'',outBy:'',inMethod:'',outMethod:'',absent:true,note:''});save();render();});
+  v.querySelectorAll('[data-unabs]').forEach(b=>b.onclick=()=>{state.log=state.log.filter(e=>!(e.childId===b.dataset.unabs&&e.date===tk&&e.absent));save();render();});
+}
+
+/* Manual check-in / check-out by staff (corrections, parents without a phone).
+   Normal sign-ins come from the wall signs via syncForm(). */
+function startCheck(childId,kind){
+  const c=childById(childId); if(!c) return; const tk=todayKey();
+  if(kind==='auto') kind=openEntry(childId,tk)?'out':'in';
+  const auth=c.contacts.filter(x=>x.authorized); const now=new Date();
+  sheet(`<header><h3>${esc(kind==='in'?t('checkIn'):t('checkOut'))} · ${esc(c.first)} ${esc(c.last)}</h3><button class="btn sm" data-close>✕</button></header>
+  ${c.allergies||c.meds?`<p class="sub">${c.allergies?'⚠ '+esc(t('allergies'))+': '+esc(c.allergies):''}${c.meds?(c.allergies?' · ':'')+esc(t('meds'))+': '+esc(c.meds):''}</p>`:''}
+  <div class="field"><label>${esc(kind==='in'?t('whoDrop'):t('whoPick'))}</label>
+    <div class="radio">${auth.map((x,i)=>`<label><input type="radio" name="who" value="${esc(x.name)}" ${i===0?'checked':''}><span>${esc(x.name)} <span style="color:var(--muted);font-size:13px">· ${esc(x.relation)}</span></span></label>`).join('')}
+    <label><input type="radio" name="who" value="__other" ${auth.length?'':'checked'}><span>${esc(t('other'))}</span></label></div></div>
+  <div class="field" id="otherWrap" ${auth.length?'hidden':''}><label>${esc(t('otherName'))}</label><input id="otherName" autocomplete="off"></div>
+  <div class="form"><div class="field"><label>${esc(t('time'))}</label><input type="time" id="ckTime" value="${pad(now.getHours())}:${pad(now.getMinutes())}"></div>
+  <div class="field"><label>${esc(t('note'))}</label><input id="ckNote"></div></div>
+  <button class="btn block ${kind==='in'?'ok':'primary'}" id="ckGo">${esc(kind==='in'?t('confirmIn'):t('confirmOut'))}</button>`,h=>{
+    h.querySelectorAll('input[name=who]').forEach(r=>r.onchange=()=>{$('#otherWrap',h).hidden=h.querySelector('input[name=who]:checked').value!=='__other';});
+    $('#ckGo',h).onclick=()=>{ let who=h.querySelector('input[name=who]:checked')?.value||''; if(who==='__other') who=$('#otherName',h).value.trim();
+      recordEvent(childId,kind,combine(tk,$('#ckTime',h).value||`${pad(now.getHours())}:${pad(now.getMinutes())}`),who,'manual',$('#ckNote',h).value.trim());
+      save(); closeSheet(); render(); toast(kind==='in'?t('checkedIn'):t('checkedOut')); };
+  });
+}
+/* Apply one sign-in or sign-out to the log. Used by staff entries and by form sync. */
+function recordEvent(childId,kind,iso,who,method,note){
+  const key=dateKey(new Date(iso));
+  if(kind==='in'){ state.log=state.log.filter(e=>!(e.childId===childId&&e.date===key&&e.absent));
+    state.log.push({id:uid(),childId,date:key,inAt:iso,outAt:null,inBy:who,outBy:'',inMethod:method,outMethod:'',absent:false,note:note||''}); return; }
+  const open=state.log.filter(e=>e.childId===childId&&e.date===key&&e.inAt&&!e.outAt&&e.inAt<=iso).sort((a,b)=>b.inAt.localeCompare(a.inAt))[0];
+  if(open){ open.outAt=iso; open.outBy=who; open.outMethod=method; if(note) open.note=(open.note?open.note+' · ':'')+note; }
+  else state.log.push({id:uid(),childId,date:key,inAt:null,outAt:iso,inBy:'',outBy:who,inMethod:'',outMethod:method,absent:false,note:note||''});
+}
+
+/* ---------- CHILDREN ---------- */
+function renderChildren(){
+  const v=$('#view-children'); const q=childFilter.toLowerCase();
+  const list=state.children.filter(c=>(!childActiveOnly||c.status==='active')&&(fullName(c)+' '+c.first).toLowerCase().includes(q)).sort((a,b)=>fullName(a).localeCompare(fullName(b)));
+  v.innerHTML=`<div class="row spread"><h2>${esc(t('children'))} <span class="pill num">${state.children.length}</span></h2><button class="btn primary" id="addChild">+ ${esc(t('addChild'))}</button></div>
+  <div class="row"><input id="childSearch" class="grow" placeholder="${esc(t('search'))}" value="${esc(childFilter)}" autocomplete="off"><select id="childActive" style="width:auto"><option value="1" ${childActiveOnly?'selected':''}>${esc(t('activeOnly'))}</option><option value="0" ${childActiveOnly?'':'selected'}>${esc(t('allChildren'))}</option></select></div>
+  <div class="list">${list.length?list.map(c=>`<div class="item tap" data-open="${c.id}"><div class="avatar">${esc(initials(c))}</div><div class="grow"><div class="name">${esc(fullName(c))} ${c.status!=='active'?`<span class="pill">${esc(t('inactive'))}</span>`:''} ${c.sample?`<span class="pill qr">${esc(t('sampleTag'))}</span>`:''}</div><div class="meta">${esc(c.dob||'')} ${c.dob?'('+ageText(c.dob)+')':''} ${c.classroom?'· '+esc(c.classroom):''}${c.allergies?' · ⚠ '+esc(c.allergies):''}</div></div><span style="color:var(--muted)">›</span></div>`).join(''):`<div class="empty">${esc(t('noChildren'))}</div>`}</div>`;
+  $('#addChild',v).onclick=()=>editChild(null);
+  $('#childSearch',v).oninput=e=>{childFilter=e.target.value;renderChildren();const i=$('#childSearch');i.focus();i.setSelectionRange(i.value.length,i.value.length);};
+  $('#childActive',v).onchange=e=>{childActiveOnly=e.target.value==='1';renderChildren();};
+  v.querySelectorAll('[data-open]').forEach(el=>el.onclick=()=>editChild(el.dataset.open));
+}
+function contactRow(x){ return `<div class="contact" data-cid="${x.id}"><div class="field"><label>${esc(t('contactName'))}</label><input class="c-name" value="${esc(x.name)}"></div><div class="field"><label>${esc(t('relation'))}</label><input class="c-rel" value="${esc(x.relation)}"></div><div class="field"><label>${esc(t('phone'))}</label><input class="c-phone" type="tel" value="${esc(x.phone)}"></div><div class="field"><label>${esc(t('email'))}</label><input class="c-email" type="email" value="${esc(x.email)}"></div><div class="full row spread"><label class="check"><input type="checkbox" class="c-auth" ${x.authorized?'checked':''}>${esc(t('authorized'))}</label><button class="btn sm danger c-del" type="button">${esc(t('delete'))}</button></div></div>`; }
+function editChild(id){
+  const c=id?childById(id):{id:uid(),first:'',last:'',dob:'',status:'active',classroom:'',allergies:'',meds:'',diet:'',notes:'',tags:[],contacts:[],qrToken:newToken()};
+  const f=(k,label,type='text',full=false)=>`<div class="field ${full?'full':''}"><label>${esc(t(label))}</label><input id="f-${k}" type="${type}" value="${esc(c[k])}"></div>`;
+  sheet(`<header><h3>${esc(id?t('editChild'):t('addChild'))}</h3><button class="btn sm" data-close>✕</button></header>
+  <div class="form">${f('first','firstName')}${f('last','lastName')}${f('dob','dob','date')}
+   <div class="field"><label>${esc(t('status'))}</label><select id="f-status"><option value="active" ${c.status==='active'?'selected':''}>${esc(t('active'))}</option><option value="inactive" ${c.status!=='active'?'selected':''}>${esc(t('inactive'))}</option></select></div>
+   ${f('classroom','classroom')}${f('allergies','allergies')}${f('meds','meds')}${f('diet','diet')}
+   <div class="field full"><label>${esc(t('tags'))}</label><input id="f-tags" value="${esc(c.tags.join(', '))}"></div>
+   <div class="field full"><label>${esc(t('notes'))}</label><textarea id="f-notes">${esc(c.notes)}</textarea></div></div>
+  <div class="row spread"><h3>${esc(t('contacts'))}</h3><button class="btn sm" id="addContact" type="button">+ ${esc(t('addContact'))}</button></div>
+  <div class="list" id="contacts">${c.contacts.map(contactRow).join('')}</div>
+  <div class="row">${id?`<button class="btn danger" id="delChild">${esc(t('deleteChild'))}</button>`:''}</div>
+  <div class="row"><button class="btn primary grow" id="saveChild">${esc(t('save'))}</button><button class="btn grow" data-close>${esc(t('cancel'))}</button></div>`,h=>{
+    const cl=$('#contacts',h);
+    const bindDel=()=>cl.querySelectorAll('.c-del').forEach(b=>b.onclick=()=>b.closest('.contact').remove());
+    bindDel();
+    $('#addContact',h).onclick=()=>{cl.insertAdjacentHTML('beforeend',contactRow({id:uid(),name:'',relation:'',phone:'',email:'',authorized:true}));bindDel();cl.lastElementChild.querySelector('input').focus();};
+    if(id){ $('#delChild',h).onclick=()=>confirmBox(t('deleteConfirm',{name:c.first+' '+c.last}),()=>{state.children=state.children.filter(x=>x.id!==id);state.log=state.log.filter(e=>e.childId!==id);save();render();toast(t('deleted'));}); }
+    $('#saveChild',h).onclick=()=>{ const g=k=>$('#f-'+k,h).value.trim(); if(!g('first')||!g('last')){toast(t('required'));return;}
+      Object.assign(c,{first:g('first'),last:g('last'),dob:g('dob'),status:$('#f-status',h).value,classroom:g('classroom'),allergies:g('allergies'),meds:g('meds'),diet:g('diet'),notes:$('#f-notes',h).value.trim(),tags:g('tags').split(',').map(s=>s.trim()).filter(Boolean)});
+      c.contacts=[...cl.querySelectorAll('.contact')].map(el=>({id:el.dataset.cid,name:$('.c-name',el).value.trim(),relation:$('.c-rel',el).value.trim(),phone:$('.c-phone',el).value.trim(),email:$('.c-email',el).value.trim(),authorized:$('.c-auth',el).checked})).filter(x=>x.name);
+      if(!id){delete c.sample;state.children.push(c);} else if(c.sample) delete c.sample;
+      save(); closeSheet(); render(); toast(t('saved')); };
+  });
+}
+
+/* ---------- WALL SIGNS + GOOGLE FORM SYNC ----------
+   One Google Form ("Tipo", "Niño" checkboxes, "Su nombre", "Nota") feeds a Google Sheet.
+   Two printed signs carry pre-filled form links (Tipo=Entrada / Tipo=Salida).
+   syncForm() reads the sheet's published CSV (or an uploaded CSV), matches child names,
+   and applies each response once (state.formSeen holds processed response keys). */
+const FORM_DEFAULTS={inUrl:'',outUrl:'',csvUrl:''};
+const formCfg=()=>{ if(!state.form) state.form={...FORM_DEFAULTS,lastSync:null}; else { if(!state.form.inUrl) state.form.inUrl=FORM_DEFAULTS.inUrl; if(!state.form.csvUrl) state.form.csvUrl=FORM_DEFAULTS.csvUrl; } return state.form; };
+const deriveOut=u=>u?u.replace(/=Entrada(?=&|$)/i,'=Salida'):'';
+const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+const formChildName=c=>`${c.first} ${c.last}`;
+function parseCsv(text){ const rows=[]; let row=[],f='',q=false; text=text.replace(/^﻿/,'');
+  for(let i=0;i<text.length;i++){ const ch=text[i];
+    if(q){ if(ch==='"'){ if(text[i+1]==='"'){f+='"';i++;} else q=false; } else f+=ch; }
+    else if(ch==='"') q=true; else if(ch===','){row.push(f);f='';} else if(ch==='\n'){row.push(f);rows.push(row);row=[];f='';} else if(ch!=='\r') f+=ch; }
+  if(f||row.length){row.push(f);rows.push(row);} return rows.filter(r=>r.some(x=>x.trim())); }
+function parseStamp(s){ s=String(s).trim(); if(/^\d{4}-\d{2}-\d{2}/.test(s)){ const d=new Date(s.replace(' ','T')); return isNaN(d)?null:{d}; }
+  const m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})[ ,]+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([ap]\.?\s*m\.?)?/i); if(!m) return null;
+  let a=+m[1],b=+m[2],y=+m[3],h=+m[4]; const ap=m[7]?m[7].toLowerCase()[0]:''; if(ap==='p'&&h<12)h+=12; if(ap==='a'&&h===12)h=0;
+  let dmy=false; if(a>12){ dmy=true; [a,b]=[b,a]; } return {d:new Date(y,a-1,b,h,+m[5],+(m[6]||0)),dmy}; }
+function applyCsv(text){
+  const rows=parseCsv(text); if(rows.length<2) return {added:0,unmatched:[],dmy:false};
+  const head=rows[0].map(norm); const find=(...keys)=>head.findIndex(h=>keys.some(k=>h.includes(k)));
+  let iT=find('marca temporal','timestamp'); if(iT<0) iT=0;
+  let iType=find('tipo','type'); let iKid=find('nino','child','hijo','estudiante'); let iWho=find('su nombre','your name','nombre','name'); let iNote=find('nota','note');
+  if(iType<0) iType=1; if(iKid<0) iKid=2; if(iWho<0||iWho===iKid) iWho=3; if(iNote<0) iNote=-1;
+  const byName=new Map(); state.children.forEach(c=>{ byName.set(norm(formChildName(c)),c); byName.set(norm(c.last+' '+c.first),c); byName.set(norm(c.first),byName.has(norm(c.first))?null:c); });
+  const seen=new Set(state.formSeen||[]); let added=0, dmy=false; const unmatched=new Set();
+  const items=rows.slice(1).map(r=>({r,ts:parseStamp(r[iT]||'')})).filter(x=>x.ts).sort((a,b)=>a.ts.d-b.ts.d);
+  for(const {r,ts} of items){ if(ts.dmy) dmy=true;
+    const type=norm(r[iType]); const kind=/salida|out|sal/.test(type)?'out':/entrada|in|ent/.test(type)?'in':null; if(!kind) continue;
+    const who=(r[iWho]||'').trim(); const note=iNote>=0?(r[iNote]||'').trim():'';
+    (r[iKid]||'').split(/\s*,\s*/).filter(Boolean).forEach(name=>{ const key=[r[iT],kind,norm(name),norm(who)].join('|'); if(seen.has(key)) return;
+      const c=byName.get(norm(name)); if(!c){ unmatched.add(name); return; }
+      seen.add(key); recordEvent(c.id,kind,ts.d.toISOString(),who,'qr',note); added++; }); }
+  state.formSeen=[...seen]; formCfg().lastSync=new Date().toISOString(); save();
+  return {added,unmatched:[...unmatched],dmy};
+}
+let lastSyncResult=null, syncBusy=false;
+async function syncForm(silent){
+  const cfg=formCfg(); if(!cfg.csvUrl||syncBusy) return; syncBusy=true;
+  const tryFetch=async u=>{ const res=await fetch(u,{cache:'no-store'}); if(!res.ok) throw new Error(res.status); return res.text(); };
+  try{ let text;
+    try{ text=await tryFetch(cfg.csvUrl+(cfg.csvUrl.includes('?')?'&':'?')+'_='+Date.now()); }
+    catch(e1){ await new Promise(r=>setTimeout(r,1500)); text=await tryFetch(cfg.csvUrl); }   // one retry, plain URL
+    lastSyncResult=applyCsv(text); if(!silent||lastSyncResult.added) toast(lastSyncResult.added?t('syncDone',{n:lastSyncResult.added}):t('syncNone'));
+  }catch(err){ const blocked=!!(window.claude&&window.claude.use); if(!silent||blocked) lastSyncResult={error:blocked?'blocked':'fail'}; if(!silent) toast(t(blocked?'syncBlocked':'syncFail')); }
+  finally{ syncBusy=false; if(tab!=='more') render(); }
+}
+function autoSync(){ if(formCfg().csvUrl&&!(window.claude&&window.claude.use)) syncForm(true); }
+function syncBar(){ const cfg=formCfg(); if(!cfg.csvUrl&&!cfg.inUrl) return '';
+  return `<div class="row spread card" style="padding:10px 14px"><span class="sub">${esc(t('lastSync'))}: ${cfg.lastSync?fmtTime(cfg.lastSync):esc(t('never'))}</span><span class="row"><button class="btn sm" id="syncNow">↻ ${esc(t('sync'))}</button><label class="btn sm">⇧ CSV<input type="file" id="csvUp" hidden></label></span></div>`; }
+function bindSyncBar(root){ const s=$('#syncNow',root); if(s) s.onclick=()=>{ toast(t('syncing')); syncForm(false); }; const u=$('#csvUp',root); if(u) u.onchange=e=>{ const f=e.target.files[0]; if(!f) return; const fr=new FileReader(); fr.onload=()=>{ lastSyncResult=applyCsv(fr.result); toast(lastSyncResult.added?t('syncDone',{n:lastSyncResult.added}):t('syncNone')); render(); }; fr.readAsText(f); e.target.value=''; }; }
+function syncWarnings(){ const r=lastSyncResult; if(!r) return ''; let h='';
+  if(r.error) h+=`<div class="banner">${esc(t(r.error==='blocked'?'syncBlocked':'syncFail'))}</div>`;
+  if(r.dmy) h+=`<div class="banner">${esc(t('badDate'))}</div>`;
+  if(r.unmatched&&r.unmatched.length) h+=`<div class="banner"><span class="grow">${esc(t('unmatched'))}: ${r.unmatched.map(esc).join(', ')}</span></div>`; return h; }
+
+function signHtml(kind){ const org=state.settings.org||'Entrada'; const es=state.settings.lang!=='en';
+  const big=kind==='in'?t('signIn'):t('signOut'), alt=kind==='in'?t('signInEn'):t('signOutEn');
+  return `<div class="qrcard sign ${kind}"><div class="org">${esc(org)}</div><div class="cn" style="font-size:34px;color:${kind==='in'?'var(--ok)':'var(--accent)'}">${esc(big)}</div><div class="sub">${esc(alt)}</div><div class="qr" id="sign-${kind}"></div><div style="font-size:14px">${esc(t('signStep'))}</div><div class="sub" style="font-size:12px">${esc(t('signStepEn'))}</div></div>`; }
+function drawSign(kind,url){ const el=document.getElementById('sign-'+kind); if(!el||!window.QRCode||!url) return; el.innerHTML=''; new QRCode(el,{text:url,width:220,height:220,correctLevel:QRCode.CorrectLevel.M}); }
+
+function renderSigns(){
+  const v=$('#view-signs'); const cfg=formCfg(); const outUrl=cfg.outUrl||deriveOut(cfg.inUrl);
+  const kids=state.children.filter(c=>c.status==='active').sort(byName).map(formChildName).join('\n');
+  v.innerHTML=`<div><h2>${esc(t('signsTitle'))}</h2><p class="sub">${esc(t('signsSub'))}</p></div>
+  ${syncBar()}${syncWarnings()}
+  ${cfg.inUrl?`<div class="qrgrid">${signHtml('in')}${signHtml('out')}</div><button class="btn primary block" id="signsPdf">⇩ ${esc(t('signsPdf'))}</button>`:`<div class="banner">${esc(t('needLinks'))}</div>`}
+  <div class="card"><h3>${esc(t('setup'))}</h3><ol style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:14px">${[1,2,3,4,5,6,7,8].map(i=>`<li>${esc(t('step'+i))}</li>`).join('')}</ol></div>
+  <div class="card"><div class="row spread"><h3 style="margin:0">${esc(t('childList'))}</h3><button class="btn sm" id="copyKids">${esc(t('copy'))}</button></div><div class="mono" id="kidList" style="margin-top:8px">${esc(kids)}</div></div>
+  <div class="card result"><div class="field"><label for="f-csv">${esc(t('csvLink'))}</label><input id="f-csv" value="${esc(cfg.csvUrl)}" placeholder="https://docs.google.com/spreadsheets/d/e/…/pub?output=csv" autocomplete="off"><p class="sub">${esc(t('privacy'))}</p></div>
+  <div class="field"><label for="f-in">${esc(t('inLink'))}</label><input id="f-in" value="${esc(cfg.inUrl)}" placeholder="https://docs.google.com/forms/d/e/…/viewform?usp=pp_url&entry.…=Entrada" autocomplete="off"></div>
+  <div class="field"><label for="f-out">${esc(t('outLink'))}</label><input id="f-out" value="${esc(cfg.outUrl)}" placeholder="${esc(deriveOut(cfg.inUrl)||t('outAuto'))}" autocomplete="off"><p class="sub">${esc(t('outAuto'))}</p></div>
+  <button class="btn primary" id="saveLinks">${esc(t('saveLinks'))}</button></div>`;
+  bindSyncBar(v);
+  if(cfg.inUrl){ drawSign('in',cfg.inUrl); drawSign('out',outUrl); $('#signsPdf',v).onclick=()=>exportSignsPdf(cfg.inUrl,outUrl); }
+  $('#copyKids',v).onclick=()=>{ navigator.clipboard?.writeText(kids).then(()=>toast(t('copied'))).catch(()=>{ const rg=document.createRange(); rg.selectNodeContents($('#kidList',v)); const s=getSelection(); s.removeAllRanges(); s.addRange(rg); }); };
+  $('#saveLinks',v).onclick=()=>{ cfg.csvUrl=$('#f-csv',v).value.trim(); cfg.inUrl=$('#f-in',v).value.trim(); cfg.outUrl=$('#f-out',v).value.trim(); save(); toast(t('linksSaved')); renderSigns(); autoSync(); };
+}
+async function exportSignsPdf(inUrl,outUrl){
+  toast(t('preparing'));
+  try{ await loadLib('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',()=>window.jspdf&&window.jspdf.jsPDF); }catch(err){ toast(t('exportFail')); return; }
+  const doc=new window.jspdf.jsPDF({unit:'pt',format:'letter'}); const W=doc.internal.pageSize.getWidth(), H=doc.internal.pageSize.getHeight();
+  const qrData=url=>{ const tmp=document.createElement('div'); new QRCode(tmp,{text:url,width:600,height:600,correctLevel:QRCode.CorrectLevel.M}); const cv=tmp.querySelector('canvas'); return cv.toDataURL('image/png'); };
+  [['in',inUrl,[45,138,88]],['out',outUrl,[217,85,59]]].forEach(([kind,url,rgb],i)=>{ if(i) doc.addPage();
+    doc.setFillColor(...rgb); doc.rect(0,0,W,150,'F'); doc.setTextColor(255); doc.setFont('helvetica','bold'); doc.setFontSize(72);
+    doc.text(kind==='in'?'ENTRADA':'SALIDA',W/2,95,{align:'center'}); doc.setFontSize(26); doc.setFont('helvetica','normal'); doc.text(kind==='in'?'Sign in':'Sign out',W/2,130,{align:'center'});
+    const s=340; doc.addImage(qrData(url),'PNG',(W-s)/2,190,s,s);
+    doc.setTextColor(30); doc.setFontSize(18); doc.text('Escanea con la cámara de tu teléfono,',W/2,580,{align:'center'}); doc.text('marca a tu hijo y escribe tu nombre.',W/2,604,{align:'center'});
+    doc.setTextColor(110); doc.setFontSize(14); doc.text('Scan with your phone camera, check your child and type your name.',W/2,636,{align:'center'});
+    doc.setTextColor(30); doc.setFont('helvetica','bold'); doc.setFontSize(20); doc.text(state.settings.org||'',W/2,H-60,{align:'center'}); });
+  offerFile('letreros-entrada-salida.pdf',doc.output('blob'),'application/pdf');
+}
+
+/* ---------- LOG ---------- */
+function renderLog(){
+  const v=$('#view-log'); const kids=state.children.slice().sort((a,b)=>fullName(a).localeCompare(fullName(b)));
+  const dayRows=kids.map(c=>({c,es:entriesFor(c.id,logDay)})).filter(x=>x.es.length);
+  const [rFrom,rTo]=reportRange(); const r=buildReport(rFrom,rTo);
+  v.innerHTML=`<h2>${esc(t('log'))}</h2>
+  <div class="daynav"><button class="btn" id="prevDay">‹</button><input type="date" id="logDate" value="${logDay}"><button class="btn" id="nextDay">›</button></div>
+  <p class="sub">${esc(fmtDate(logDay))}</p>
+  <div class="card"><div class="row spread"><h3 style="margin:0">${esc(t('date'))}</h3><button class="btn sm" id="addEntry">+ ${esc(t('addEntry'))}</button></div>
+  ${dayRows.length?dayRows.map(({c,es})=>`<div style="margin-top:10px"><div class="name">${esc(fullName(c))}</div>${es.map(e=>e.absent?`<div class="entry" data-edit="${e.id}"><span class="pill absent">${esc(t('absent'))}</span><div class="who">${esc(e.note||'')}</div><button class="btn sm">✎</button></div>`:
+   `<div class="entry" data-edit="${e.id}"><div class="t num">${fmtTime(e.inAt)} → ${e.outAt?fmtTime(e.outAt):`<span class="pill in">${esc(t('stillIn'))}</span>`}</div><div class="who">${e.inBy?esc(t('droppedBy'))+': '+esc(e.inBy):''}${e.outBy?' · '+esc(t('pickedBy'))+': '+esc(e.outBy):''}${e.inMethod==='qr'||e.outMethod==='qr'?` · <span class="pill qr">${esc(t('viaForm'))}</span>`:''}${e.note?' · '+esc(e.note):''}${e.outAt?` · <span class="num">${hoursBetween(e.inAt,e.outAt).toFixed(2)} h</span>`:''}</div><button class="btn sm">✎</button></div>`).join('')}</div>`).join(''):`<div class="empty">${esc(t('noEntries'))}</div>`}</div>
+  <div class="card"><h3>${esc(t('reports'))}</h3>
+  <div class="row"><select id="rp-mode" style="width:auto"><option value="day" ${reportMode==='day'?'selected':''}>${esc(t('thisDay'))}</option><option value="month" ${reportMode==='month'?'selected':''}>${esc(t('thisMonth'))}</option><option value="custom" ${reportMode==='custom'?'selected':''}>${esc(t('customRange'))}</option></select>
+  <input type="date" id="rp-from" value="${reportFrom}" ${reportMode==='custom'?'':'hidden'} style="width:auto"><input type="date" id="rp-to" value="${reportTo}" ${reportMode==='custom'?'':'hidden'} style="width:auto"></div>
+  <p class="sub">${esc(rangeLabel(rFrom,rTo))} · ${r.kids.length} ${esc(t('kidsCount'))} · ${r.opDays.size} ${esc(t('activeDays'))}</p>
+  <div class="row" style="margin:10px 0"><button class="btn primary" id="xPdf">⇩ PDF</button><button class="btn" id="xXlsx">⇩ Excel</button><button class="btn" id="xCsv">⇩ CSV</button></div>
+  <div class="tablewrap"><table><thead><tr><th>${esc(t('child'))}</th><th class="num">${esc(t('presentDays'))}</th><th class="num">${esc(t('absentDays'))}</th><th class="num">${esc(t('noRecord'))}</th><th class="num">${esc(t('hours'))}</th></tr></thead><tbody>
+  ${r.summary.map(s=>`<tr><td>${esc(fullName(s.c))}</td><td class="num">${s.present}</td><td class="num">${s.absent}</td><td class="num">${s.none}</td><td class="num">${s.hrs.toFixed(1)}</td></tr>`).join('')}
+  <tr><th>${esc(t('total'))}</th><th class="num">${r.summary.reduce((a,s)=>a+s.present,0)}</th><th class="num">${r.summary.reduce((a,s)=>a+s.absent,0)}</th><th class="num">${r.summary.reduce((a,s)=>a+s.none,0)}</th><th class="num">${r.summary.reduce((a,s)=>a+s.hrs,0).toFixed(1)}</th></tr></tbody></table></div></div>`;
+  const shift=n=>{const d=fromKey(logDay);d.setDate(d.getDate()+n);logDay=dateKey(d);renderLog();};
+  $('#prevDay',v).onclick=()=>shift(-1); $('#nextDay',v).onclick=()=>shift(1); $('#logDate',v).onchange=e=>{if(e.target.value){logDay=e.target.value;renderLog();}};
+  $('#addEntry',v).onclick=()=>editEntry(null);
+  $('#rp-mode',v).onchange=e=>{reportMode=e.target.value; if(reportMode==='custom'&&!reportFrom){ const [a,b]=reportRange(); reportFrom=a; reportTo=b; } renderLog();};
+  $('#rp-from',v).onchange=e=>{reportFrom=e.target.value||reportFrom;renderLog();}; $('#rp-to',v).onchange=e=>{reportTo=e.target.value||reportTo;renderLog();};
+  $('#xPdf',v).onclick=()=>exportPdf(r); $('#xXlsx',v).onclick=()=>exportXlsx(r); $('#xCsv',v).onclick=()=>exportCsv(r);
+  v.querySelectorAll('[data-edit]').forEach(el=>el.onclick=()=>editEntry(el.dataset.edit));
+}
+function editEntry(id){
+  const e=id?state.log.find(x=>x.id===id):{id:uid(),childId:state.children[0]?.id||'',date:logDay,inAt:null,outAt:null,inBy:'',outBy:'',inMethod:'manual',outMethod:'manual',absent:false,note:''};
+  if(!e) return;
+  sheet(`<header><h3>${esc(id?t('editEntry'):t('addEntry'))}</h3><button class="btn sm" data-close>✕</button></header>
+  <div class="form"><div class="field full"><label>${esc(t('selectChild'))}</label><select id="e-child">${state.children.slice().sort((a,b)=>fullName(a).localeCompare(fullName(b))).map(c=>`<option value="${c.id}" ${c.id===e.childId?'selected':''}>${esc(fullName(c))}</option>`).join('')}</select></div>
+   <div class="field"><label>${esc(t('date'))}</label><input type="date" id="e-date" value="${e.date}"></div>
+   <div class="field"><label class="check" style="text-transform:none;letter-spacing:0;margin-top:22px"><input type="checkbox" id="e-abs" ${e.absent?'checked':''}>${esc(t('markAbsent'))}</label></div>
+   <div class="field"><label>${esc(t('inTime'))}</label><input type="time" id="e-in" value="${e.inAt?toHHMM(e.inAt):''}"></div>
+   <div class="field"><label>${esc(t('outTime'))}</label><input type="time" id="e-out" value="${e.outAt?toHHMM(e.outAt):''}"></div>
+   <div class="field"><label>${esc(t('droppedBy'))}</label><input id="e-inby" value="${esc(e.inBy)}"></div>
+   <div class="field"><label>${esc(t('pickedBy'))}</label><input id="e-outby" value="${esc(e.outBy)}"></div>
+   <div class="field full"><label>${esc(t('note'))}</label><input id="e-note" value="${esc(e.note)}"></div></div>
+  <div class="row"><button class="btn primary grow" id="e-save">${esc(t('save'))}</button>${id?`<button class="btn danger" id="e-del">${esc(t('deleteEntry'))}</button>`:''}</div>`,h=>{
+    $('#e-save',h).onclick=()=>{ e.childId=$('#e-child',h).value; e.date=$('#e-date',h).value||e.date; e.absent=$('#e-abs',h).checked; const i=$('#e-in',h).value,o=$('#e-out',h).value;
+      e.inAt=i&&!e.absent?combine(e.date,i):null; e.outAt=o&&!e.absent?combine(e.date,o):null; e.inBy=$('#e-inby',h).value.trim(); e.outBy=$('#e-outby',h).value.trim(); e.note=$('#e-note',h).value.trim();
+      if(!id) state.log.push(e); save(); closeSheet(); logDay=e.date; render(); toast(t('saved')); };
+    if(id) $('#e-del',h).onclick=()=>{state.log=state.log.filter(x=>x.id!==id);save();closeSheet();render();toast(t('deleted'));};
+  });
+}
+/* ---------- REPORTS (PDF · Excel · CSV) ---------- */
+const byName=(a,b)=>fullName(a).localeCompare(fullName(b));
+function reportRange(){ if(reportMode==='day') return [logDay,logDay]; if(reportMode==='custom'&&reportFrom&&reportTo) return reportFrom<=reportTo?[reportFrom,reportTo]:[reportTo,reportFrom]; const [y,m]=logDay.split('-'); const last=new Date(+y,+m,0).getDate(); return [`${y}-${m}-01`,`${y}-${m}-${pad(last)}`]; }
+function daysBetween(from,to){ const out=[]; const d=fromKey(from), end=fromKey(to); while(d<=end&&out.length<400){ out.push(dateKey(d)); d.setDate(d.getDate()+1); } return out; }
+const shortDate=k=>fromKey(k).toLocaleDateString(locale(),{day:'numeric',month:'short',year:'numeric'});
+const rangeLabel=(a,b)=>a===b?fmtDate(a):`${shortDate(a)} – ${shortDate(b)}`;
+const stLabel=st=>st==='in'?t('present'):st==='out'?t('gone'):st==='absent'?t('absent'):t('noRecord');
+function buildReport(from,to){
+  const days=daysBetween(from,to); const inRange=state.log.filter(e=>e.date>=from&&e.date<=to);
+  const ids=new Set(state.children.filter(c=>c.status==='active').map(c=>c.id)); inRange.forEach(e=>ids.add(e.childId));
+  const kids=[...ids].map(childById).filter(Boolean).sort(byName);
+  const opDays=new Set(inRange.filter(e=>e.inAt||e.outAt).map(e=>e.date));
+  const cell=(cid,day)=>{ const es=inRange.filter(e=>e.childId===cid&&e.date===day).sort((a,b)=>(a.inAt||'').localeCompare(b.inAt||''));
+    const st=es.some(e=>e.absent)?'absent':es.some(e=>e.inAt&&!e.outAt)?'in':es.some(e=>e.inAt||e.outAt)?'out':'none'; return {es,st,hrs:es.reduce((a,e)=>a+hoursBetween(e.inAt,e.outAt),0)}; };
+  const summary=kids.map(c=>{ let present=0,absent=0,none=0,hrs=0; days.forEach(d=>{ const x=cell(c.id,d); if(x.st==='absent') absent++; else if(x.st==='in'||x.st==='out') present++; else if(opDays.has(d)) none++; hrs+=x.hrs; }); return {c,present,absent,none,hrs}; });
+  const detail=inRange.slice().sort((a,b)=>a.date.localeCompare(b.date)||fullName(childById(a.childId)||{first:'',last:''}).localeCompare(fullName(childById(b.childId)||{first:'',last:''}))||(a.inAt||'').localeCompare(b.inAt||'')).map(e=>({e,c:childById(e.childId)||{first:'?',last:''}}));
+  return {from,to,days,kids,opDays,cell,summary,detail};
+}
+/* Tables as arrays of rows (shared by every format) */
+function summaryRows(r){ return [[t('child'),t('presentDays'),t('absentDays'),t('noRecord'),t('hours')],...r.summary.map(s=>[fullName(s.c),s.present,s.absent,s.none,+s.hrs.toFixed(2)]),[t('total'),r.summary.reduce((a,s)=>a+s.present,0),r.summary.reduce((a,s)=>a+s.absent,0),r.summary.reduce((a,s)=>a+s.none,0),+r.summary.reduce((a,s)=>a+s.hrs,0).toFixed(2)]]; }
+function rosterRows(r,day){ return [[t('child'),t('status'),t('inTime'),t('outTime'),t('hours'),t('droppedBy'),t('pickedBy'),t('method'),t('note')],...r.kids.map(c=>{ const x=r.cell(c.id,day); const e=x.es[x.es.length-1]; const ins=x.es.filter(e=>e.inAt).map(e=>toHHMM(e.inAt)).join(' / '), outs=x.es.filter(e=>e.outAt).map(e=>toHHMM(e.outAt)).join(' / ');
+  return [fullName(c),stLabel(x.st)+(x.st==='in'&&day<todayKey()?' ('+t('missingOut')+')':''),ins,outs,x.hrs?+x.hrs.toFixed(2):'',x.es.map(e=>e.inBy).filter(Boolean).join(' / '),x.es.map(e=>e.outBy).filter(Boolean).join(' / '),[...new Set(x.es.flatMap(e=>[e.inMethod,e.outMethod]).filter(Boolean))].join('/'),x.es.map(e=>e.note).filter(Boolean).join(' · ')]; })]; }
+function detailRows(r){ return [[t('date'),t('child'),t('inTime'),t('outTime'),t('hours'),t('droppedBy'),t('pickedBy'),t('method'),t('absent'),t('note')],...r.detail.map(({e,c})=>[e.date,fullName(c),e.inAt?toHHMM(e.inAt):'',e.outAt?toHHMM(e.outAt):'',e.inAt&&e.outAt?+hoursBetween(e.inAt,e.outAt).toFixed(2):'',e.inBy,e.outBy,[e.inMethod,e.outMethod].filter(Boolean).join('/'),e.absent?t('yes'):'',e.note])]; }
+function gridRows(r){ const dayHead=r.days.map(k=>String(+k.slice(8))); return [[t('child'),...dayHead,t('hours')],...r.kids.map(c=>{ let tot=0; const cells=r.days.map(d=>{ const x=r.cell(c.id,d); tot+=x.hrs; return x.st==='absent'?'A':x.st==='none'?'':x.hrs?+x.hrs.toFixed(1):'P'; }); return [fullName(c),...cells,+tot.toFixed(1)]; })]; }
+const reportName=r=>`${(state.settings.org||'entrada').replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'-')}-${r.from===r.to?r.from:r.from+'_'+r.to}`;
+
+const libs={};
+function loadLib(url,ready){ if(ready()) return Promise.resolve(); if(!libs[url]) libs[url]=new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=url; s.onload=()=>res(); s.onerror=()=>{ delete libs[url]; rej(new Error('load '+url)); }; document.head.appendChild(s); }); return libs[url]; }
+
+async function exportPdf(r){
+  toast(t('preparing'));
+  try{
+    await loadLib('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',()=>window.jspdf&&window.jspdf.jsPDF);
+    await loadLib('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js',()=>window.jspdf&&window.jspdf.jsPDF.API.autoTable);
+  }catch(err){ toast(t('exportFail')); return; }
+  const {jsPDF}=window.jspdf; const single=r.from===r.to; const doc=new jsPDF({orientation:single?'portrait':'landscape',unit:'pt',format:'letter'});
+  const W=doc.internal.pageSize.getWidth(); const margin=40;
+  const head={fillColor:[217,85,59],textColor:255,fontStyle:'bold'}; const styles={fontSize:8,cellPadding:3,overflow:'linebreak'};
+  doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.text(state.settings.org||'Entrada',margin,48);
+  doc.setFont('helvetica','normal'); doc.setFontSize(11); doc.text(`${t('report')} · ${rangeLabel(r.from,r.to)}`,margin,66);
+  doc.setFontSize(8); doc.setTextColor(110); doc.text(`${t('generated')}: ${new Date().toLocaleString(locale())}`,margin,80); doc.setTextColor(0);
+  const table=(rows,startY,extra)=>{ doc.autoTable(Object.assign({head:[rows[0]],body:rows.slice(1),startY,margin:{left:margin,right:margin},styles,headStyles:head,theme:'grid'},extra||{})); return doc.lastAutoTable.finalY; };
+  const section=(title,y)=>{ if(y>doc.internal.pageSize.getHeight()-120){ doc.addPage(); y=48; } doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.text(title,margin,y+22); doc.setFont('helvetica','normal'); return y+30; };
+  let y=section(t('summary'),84);
+  y=table(summaryRows(r),y,{columnStyles:{1:{halign:'right'},2:{halign:'right'},3:{halign:'right'},4:{halign:'right'}}});
+  if(single){ y=section(t('roster'),y); y=table(rosterRows(r,r.from),y); }
+  else { y=section(t('grid')+' · P = '+t('present')+' · A = '+t('absent')+' · '+t('hours'),y);
+    const g=gridRows(r); const cs={0:{cellWidth:110}}; for(let i=1;i<g[0].length;i++) cs[i]={halign:'center',cellWidth:(W-2*margin-110-40)/r.days.length}; cs[g[0].length-1]={halign:'right',cellWidth:40};
+    y=table(g,y,{styles:{fontSize:r.days.length>20?6:7,cellPadding:2},columnStyles:cs}); }
+  if(r.detail.length){ y=section(t('detail'),y); table(detailRows(r),y,{columnStyles:{4:{halign:'right'}}}); }
+  const pages=doc.internal.getNumberOfPages(); for(let p=1;p<=pages;p++){ doc.setPage(p); doc.setFontSize(8); doc.setTextColor(110); doc.text(`${p} / ${pages}`,W-margin,doc.internal.pageSize.getHeight()-20,{align:'right'}); }
+  offerFile(reportName(r)+'.pdf',doc.output('blob'),'application/pdf');
+}
+async function exportXlsx(r){
+  toast(t('preparing'));
+  try{ await loadLib('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',()=>window.XLSX); }catch(err){ toast(t('exportFail')); return; }
+  const wb=XLSX.utils.book_new(); const add=(rows,name,widths)=>{ const ws=XLSX.utils.aoa_to_sheet(rows); if(widths) ws['!cols']=widths.map(w=>({wch:w})); XLSX.utils.book_append_sheet(wb,ws,name.slice(0,31)); };
+  const title=[[state.settings.org||'Entrada'],[`${t('report')} · ${rangeLabel(r.from,r.to)}`],[`${t('generated')}: ${new Date().toLocaleString(locale())}`],[]];
+  add([...title,...summaryRows(r)],t('summary'),[30,14,14,14,10]);
+  if(r.from===r.to) add(rosterRows(r,r.from),t('roster'),[30,18,14,14,8,22,22,10,30]);
+  else add(gridRows(r),t('grid'),[30,...r.days.map(()=>5),8]);
+  add(detailRows(r),t('detail'),[12,30,10,10,8,22,22,10,8,30]);
+  const out=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+  offerFile(reportName(r)+'.xlsx',new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+}
+function csvCell(s){ s=String(s??''); return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; }
+function exportCsv(r){ const rows=r.from===r.to?rosterRows(r,r.from):detailRows(r); offerFile(reportName(r)+'.csv','﻿'+rows.map(x=>x.map(csvCell).join(',')).join('\n'),'text/csv'); }
+
+/* Hand a generated file to the user: the claude.ai download capability when the page runs as an
+   artifact, a plain browser download when it runs as the standalone file. */
+async function offerFile(name,data,mime){
+  const isText=typeof data==='string'; const inArtifact=!!(window.claude&&window.claude.use);
+  if(inArtifact){ let dl=null; try{ dl=await window.claude.use('downloads'); }catch(err){}
+    if(dl){ try{ await dl.save({filename:name,data}); toast(t('fileReady')); return; }catch(err){ if(err&&err.code==='declined') return; } }
+    if(!isText){ toast(t('downloadNA')); return; }
+    sheet(`<header><h3>${esc(t('fileReady'))} · ${esc(name)}</h3><button class="btn sm" data-close>✕</button></header><p class="sub">${esc(t('fileHint'))}</p><div class="mono" id="fileText">${esc(data)}</div><button class="btn block" id="copyBtn">${esc(t('copy'))}</button>`,h=>{
+      $('#copyBtn',h).onclick=()=>{ navigator.clipboard?.writeText(data).then(()=>toast(t('copied'))).catch(()=>{ const rg=document.createRange(); rg.selectNodeContents($('#fileText',h)); const sel=getSelection(); sel.removeAllRanges(); sel.addRange(rg); }); }; });
+    return; }
+  const blob=isText?new Blob([data],{type:mime}):data;
+  const plain=()=>{ try{ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },4000); toast(t('fileReady')); }catch(err){ toast(t('exportFail')); } };
+  let file=null; try{ file=new File([blob],name,{type:mime}); }catch(err){}
+  const touch=!!(window.matchMedia&&matchMedia('(pointer:coarse)').matches);
+  if(touch&&file&&navigator.canShare&&navigator.canShare({files:[file]})){
+    // navigator.share needs a fresh tap, so it runs from this sheet's button rather than after the async export
+    sheet(`<header><h3>${esc(t('fileReady'))}</h3><button class="btn sm" data-close>✕</button></header><p class="sub" style="word-break:break-all">${esc(name)}</p><p class="sub">${esc(t('shareHint'))}</p><button class="btn primary block" id="shareBtn">${esc(t('shareSave'))}</button><button class="btn block" id="dlBtn">${esc(t('downloadFile'))}</button>`,h=>{
+      $('#shareBtn',h).onclick=()=>{ navigator.share({files:[file],title:name}).then(()=>closeSheet()).catch(err=>{ if(err&&err.name==='AbortError') return; toast(t('exportFail')); }); };
+      $('#dlBtn',h).onclick=()=>{ closeSheet(); plain(); }; });
+    return; }
+  plain();
+}
+
+function importBackupFile(f){ if(!f) return; const r=new FileReader(); r.onload=()=>{ try{ const o=JSON.parse(r.result); if(!o||!Array.isArray(o.children)||!Array.isArray(o.log)) throw 0; state=Object.assign(blank(),o); state.rosterLoaded=true; save(); render(); toast(t('importDone')); autoSync(); }catch(err){ toast(t('importBad')); } }; r.readAsText(f); }
+
+/* ---------- MORE ---------- */
+function renderMore(){
+  const v=$('#view-more');
+  v.innerHTML=`<h2>${esc(t('more'))}</h2>
+  <div class="card"><h3>${esc(t('settings'))}</h3><div class="form"><div class="field"><label>${esc(t('orgName'))}</label><input id="s-org" value="${esc(state.settings.org)}" placeholder="Mi guardería"></div>
+  <div class="field"><label>${esc(t('language'))}</label><select id="s-lang"><option value="es" ${state.settings.lang!=='en'?'selected':''}>Español</option><option value="en" ${state.settings.lang==='en'?'selected':''}>English</option></select></div></div></div>
+  <div class="card"><h3>${esc(t('pin'))}</h3><p class="sub" style="margin-bottom:10px">${esc(t('pinHint'))}</p><div class="row"><input id="s-pin" class="grow" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="${state.settings.pin?'••••':'1234'}" autocomplete="new-password"><button class="btn" id="setPin">${esc(t('setPin'))}</button>${state.settings.pin?`<button class="btn" id="rmPin">${esc(t('removePin'))}</button><button class="btn primary" id="lockNow">${esc(t('lockNow'))}</button>`:''}</div></div>
+  <div class="card"><h3>${esc(t('backup'))}</h3><p class="sub" style="margin-bottom:10px">${esc(t('storedHere'))} ${esc(t('backupHint'))}</p>
+  <div class="row"><button class="btn grow" id="expJson">⇩ ${esc(t('exportJson'))}</button><label class="btn grow" style="justify-content:center">⇧ ${esc(t('importJson'))}<input type="file" id="impJson" hidden></label></div>
+  <p class="sub" style="margin-top:10px">${state.children.length} ${esc(t('children').toLowerCase())} · ${state.log.length} ${esc(t('log').toLowerCase())} · ${esc(t('lastBackup'))}: ${state.settings.lastBackup?esc(shortDate(state.settings.lastBackup)):esc(t('never'))}</p></div>
+  <div class="card"><div class="row">${state.children.some(c=>c.sample)?`<button class="btn" id="clrS">${esc(t('clearSamples'))}</button>`:''}<button class="btn danger" id="resetAll">${esc(t('resetAll'))}</button></div></div>`;
+  $('#setPin',v).onclick=()=>{const p=$('#s-pin',v).value.trim(); if(!/^\d{4,6}$/.test(p)){toast(t('pinFormat'));return;} state.settings.pin=p; unlocked=true; save(); render(); toast(t('pinSaved'));};
+  const rm=$('#rmPin',v); if(rm) rm.onclick=()=>{delete state.settings.pin; save(); render(); toast(t('pinRemoved'));};
+  const ln=$('#lockNow',v); if(ln) ln.onclick=()=>{unlocked=false; setTab('today');};
+  $('#s-org',v).onchange=e=>{state.settings.org=e.target.value.trim();save();render();};
+  $('#s-lang',v).onchange=e=>{state.settings.lang=e.target.value;save();render();};
+  $('#expJson',v).onclick=()=>{ state.settings.lastBackup=todayKey(); save(); offerFile(`entrada-backup-${todayKey()}.json`,JSON.stringify(state,null,2),'application/json'); renderMore(); };
+  $('#impJson',v).onchange=e=>{ importBackupFile(e.target.files[0]); e.target.value=''; };
+  const cs=$('#clrS',v); if(cs) cs.onclick=()=>confirmBox(t('clearSamplesConfirm'),clearSamples);
+  $('#resetAll',v).onclick=()=>confirmBox(t('resetConfirm'),()=>{state=blank();save();render();toast(t('deleted'));});
+}
+
+/* ---------- boot ---------- */
+(function(){ const h=location.hash.slice(1); setTab(['today','children','signs','log','more'].includes(h)?h:'today'); })();
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden){ autoSync(); if(tab==='today') render(); } });
+setInterval(()=>{ if(!document.hidden) autoSync(); },60000); autoSync();
+try{ navigator.storage&&navigator.storage.persist&&navigator.storage.persist(); }catch(e){}
+</script>
+<script>if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(function(){});</script>
+</body>
+</html>
