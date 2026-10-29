@@ -57,6 +57,14 @@ textarea{min-height:72px;resize:vertical}
 .brand h1{font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .brand small{display:block;color:var(--muted);font-size:12px;font-weight:500;font-family:var(--body)}
 .lang{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;flex:none}
+.helpbtn{width:40px;height:40px;border-radius:50%;border:0;background:var(--accent);color:var(--accent-ink);font:800 20px/1 var(--display);flex:none;cursor:pointer}
+.help{display:flex;flex-direction:column;gap:14px}
+.help section{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:var(--bg)}
+.help h4{margin:0 0 8px;font-family:var(--display);font-size:17px}
+.help ol,.help ul{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px;font-size:15.5px;line-height:1.45}
+.help .tip{font-size:14px;color:var(--muted);margin-top:8px}
+.help .links a{word-break:break-all}
+.help b{font-weight:700}
 .lang button{background:none;border:0;padding:6px 10px;font-size:13px;font-weight:600;color:var(--muted)}
 .lang button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
 
@@ -189,7 +197,8 @@ th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05
 
 <header class="topbar">
   <div class="brand"><div class="mark">E</div><div><h1 id="orgTitle">Entrada</h1><small id="todayLabel"></small></div></div>
-  <div class="lang" role="group" aria-label="Idioma"><button id="langEs" aria-pressed="true">ES</button><button id="langEn" aria-pressed="false">EN</button></div>
+  <div class="row" style="gap:8px;flex-wrap:nowrap"><button class="helpbtn" id="helpBtn" type="button" aria-label="Instrucciones / Help">?</button>
+  <div class="lang" role="group" aria-label="Idioma"><button id="langEs" aria-pressed="true">ES</button><button id="langEn" aria-pressed="false">EN</button></div></div>
 </header>
 
 <main>
@@ -336,6 +345,7 @@ let unlocked=false; const LOCKED=['children','log','more'];
 function setTab(name){ if(LOCKED.includes(name)&&state.settings.pin&&!unlocked){ askPin(()=>{unlocked=true;setTab(name);}); return; } tab=name; document.querySelectorAll('.view').forEach(v=>v.hidden=v.id!=='view-'+name); document.querySelectorAll('#tabbar button').forEach(b=>{ if(b.dataset.tab===name) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); }); if(location.hash!=='#'+name){try{history.replaceState(null,'','#'+name);}catch(e){}} render(); window.scrollTo(0,0); }
 document.querySelectorAll('#tabbar button').forEach(b=>b.addEventListener('click',()=>setTab(b.dataset.tab)));
 window.addEventListener('hashchange',()=>{const h=location.hash.slice(1); if(['today','children','signs','log','more'].includes(h)&&h!==tab) setTab(h);});
+$('#helpBtn').onclick=showHelp;
 $('#langEs').onclick=()=>{state.settings.lang='es';save();render();};
 $('#langEn').onclick=()=>{state.settings.lang='en';save();render();};
 
@@ -357,7 +367,7 @@ function renderToday(){
   const st=active.map(c=>statusOf(c.id,tk)); const n=s=>st.filter(x=>x===s).length;
   const v=$('#view-today');
   const bk=state.settings.lastBackup, bkDays=bk?Math.floor((fromKey(tk)-fromKey(bk))/864e5):null;
-  const welcome=!state.children.length?`<div class="card result"><h3>${esc(t('welcome'))}</h3><p class="sub">${esc(t('welcomeHint'))}</p><div class="row"><label class="btn primary grow" style="justify-content:center">⇧ ${esc(t('importJson'))}<input type="file" id="impWelcome" hidden></label><button class="btn grow" id="addFirst">+ ${esc(t('addChild'))}</button></div></div>`:'';
+  const welcome=!state.children.length?`<div class="card result"><h3>${esc(t('welcome'))}</h3><p class="sub">${esc(t('welcomeHint'))}</p><div class="row"><label class="btn primary grow" style="justify-content:center">⇧ ${esc(t('importJson'))}<input type="file" id="impWelcome" hidden></label><button class="btn grow" id="addFirst">+ ${esc(t('addChild'))}</button></div><button class="btn block" id="helpWelcome" style="margin-top:8px">? Instrucciones en español</button></div>`:'';
   const bkWarn=state.children.length&&bkDays!==null&&bkDays>=7?`<div class="banner">${esc(t('backupOld',{n:bkDays}))}</div>`:'';
   v.innerHTML=`${sampleBanner()}${welcome}${bkWarn}
   <div><h2>${esc(t('today'))}</h2><p class="sub">${esc(fmtDate(tk))}</p></div>${syncBar()}
@@ -378,6 +388,7 @@ function renderToday(){
   bindSampleBanner(); bindSyncBar(v);
   const iw=$('#impWelcome',v); if(iw) iw.onchange=e=>{ importBackupFile(e.target.files[0]); e.target.value=''; };
   const af=$('#addFirst',v); if(af) af.onclick=()=>editChild(null);
+  const hw=$('#helpWelcome',v); if(hw) hw.onclick=showHelp;
   v.querySelectorAll('[data-in]').forEach(b=>b.onclick=()=>startCheck(b.dataset.in,'in'));
   v.querySelectorAll('[data-out]').forEach(b=>b.onclick=()=>startCheck(b.dataset.out,'out'));
   v.querySelectorAll('[data-abs]').forEach(b=>b.onclick=()=>{state.log.push({id:uid(),childId:b.dataset.abs,date:tk,inAt:null,outAt:null,inBy:'',outBy:'',inMethod:'',outMethod:'',absent:true,note:''});save();render();});
@@ -820,17 +831,96 @@ async function exportSheetsPdf(k,kidSel){
   offerFile(`hoja-firmas-${periodDays(k)[0][0]}-${who}.pdf`,doc.output('blob'),'application/pdf');
 }
 
+/* ---------- INSTRUCTIONS (Spanish, for Isabel) ---------- */
+const APP_URL='https://cgrouwinkel.github.io/entrada-checkin/', SITE_URL='https://cgrouwinkel.github.io/chavelitas/';
+function showHelp(){
+  sheet(`<header><h3>Cómo usar Entrada</h3><button class="btn sm" data-close>✕</button></header>
+  <div class="help">
+    <section><h4>1. Instalar Entrada en el iPad (solo una vez)</h4><ol>
+      <li>Abra <b>Safari</b> y escriba: <b>cgrouwinkel.github.io/entrada-checkin</b></li>
+      <li>Toque el botón <b>Compartir</b> (el cuadrito con una flecha hacia arriba ⬆). Si no lo ve, toque los tres puntos <b>•••</b> y luego <b>Compartir</b>.</li>
+      <li>Toque <b>Agregar a pantalla de inicio</b> y luego <b>Agregar</b>.</li>
+      <li>Desde ahora, abra Entrada <b>siempre desde el ícono naranja con la “E”</b> en su pantalla de inicio, no desde Safari.</li>
+      <li>La primera vez, toque <b>Restaurar respaldo</b> y elija el archivo <b>entrada-datos-iniciales.json</b> (guárdelo antes en la app <b>Archivos</b>). Así aparecen sus niños.</li>
+    </ol></section>
+
+    <section><h4>2. Cuando llega un niño</h4>
+      <p><b>Con el letrero:</b> el papá o la mamá escanea el letrero <b>ENTRADA</b> con la cámara de su teléfono, marca a su hijo, escribe su nombre y envía. En unos minutos aparece aquí (en <b>Hoy</b>, toque <b>Sincronizar</b> si tiene prisa).</p>
+      <p style="margin-top:8px"><b>En el iPad:</b></p><ol>
+      <li>En <b>Hoy</b>, toque el botón verde <b>Entrada</b> junto al nombre del niño.</li>
+      <li>Toque el nombre de quien lo trae.</li>
+      <li>Pida al papá o a la mamá que <b>firme con el dedo</b> en el cuadro blanco. Si se equivoca, toque <b>Borrar firma</b>.</li>
+      <li>Toque <b>Registrar entrada</b>.</li>
+    </ol></section>
+
+    <section><h4>3. Cuando se va un niño</h4><ol>
+      <li>Con el letrero <b>SALIDA</b>, o en <b>Hoy</b> con el botón <b>Salida</b>.</li>
+      <li>Toque el nombre de quien lo recoge, pida la firma y toque <b>Registrar salida</b>.</li>
+    </ol></section>
+
+    <section><h4>4. Si un niño no viene</h4><ol>
+      <li>En <b>Hoy</b>, toque <b>Ausente</b> junto a su nombre. Si se equivocó, toque <b>Quitar ausencia</b>.</li>
+    </ol></section>
+
+    <section><h4>5. Hoja de firmas (igual a la de papel)</h4><ol>
+      <li>Toque <b>Registro</b> abajo.</li>
+      <li>En <b>Hojas de firmas</b>, elija el periodo (por ejemplo <b>OCTOBER – NOVEMBER 2026</b>) y el niño, o <b>Todos los niños</b>.</li>
+      <li>Toque <b>Ver hoja</b> para verla, o <b>PDF de la hoja</b> para guardarla.</li>
+      <li>Toque <b>Guardar en Archivos</b>, o envíela por correo o AirDrop para imprimirla.</li>
+    </ol></section>
+
+    <section><h4>6. Corregir una hora</h4><ol>
+      <li>Toque <b>Registro</b>, elija el día con las flechas ‹ ›.</li>
+      <li>Toque el registro del niño, cambie la hora y toque <b>Guardar</b>.</li>
+    </ol></section>
+
+    <section><h4>7. Reportes de asistencia</h4><ol>
+      <li>En <b>Registro</b>, baje hasta <b>Reportes</b>.</li>
+      <li>Elija <b>Este día</b>, <b>Este mes</b> u <b>Otro rango</b>, y toque <b>PDF</b> o <b>Excel</b>.</li>
+    </ol></section>
+
+    <section><h4>8. Agregar o cambiar a un niño</h4><ol>
+      <li>Toque <b>Niños</b>. Para uno nuevo, toque <b>Agregar niño</b>; para cambiar datos, toque su nombre.</li>
+      <li>Escriba los datos y los contactos autorizados para recogerlo, y toque <b>Guardar</b>.</li>
+      <li>Si es nuevo, agréguelo también al formulario de Google de los letreros (pídale ayuda a Claire).</li>
+    </ol></section>
+
+    <section><h4>9. Letreros con código QR</h4><ol>
+      <li>Toque <b>Letreros</b> y luego <b>Descargar letreros (PDF)</b>.</li>
+      <li>Imprímalos y péguelos en la entrada: uno de <b>ENTRADA</b> y uno de <b>SALIDA</b>.</li>
+    </ol></section>
+
+    <section><h4>10. Respaldo (una vez por semana)</h4><ol>
+      <li>Toque <b>Más</b> y luego <b>Exportar respaldo</b>.</li>
+      <li>Toque <b>Guardar en Archivos</b>. El respaldo incluye niños, horas y firmas.</li>
+      <li>Si cambia de iPad, instale Entrada (paso 1) y use <b>Restaurar respaldo</b> con ese archivo.</li>
+    </ol><p class="tip">Importante: los datos se guardan solo en este iPad. Sin respaldo, si se pierde el iPad, se pierden los datos.</p></section>
+
+    <section><h4>11. Bloquear con PIN (opcional)</h4><ol>
+      <li>En <b>Más</b>, escriba un PIN de 4 a 6 números en <b>PIN del personal</b> y toque <b>Guardar PIN</b>.</li>
+      <li>Así, <b>Niños</b>, <b>Registro</b> y <b>Más</b> piden el PIN; <b>Hoy</b> queda libre.</li>
+    </ol></section>
+
+    <section class="links"><h4>Enlaces</h4><ul>
+      <li>Entrada (esta app): <a href="${APP_URL}" target="_blank" rel="noopener">${APP_URL}</a></li>
+      <li>Sitio web de Chavelita's: <a href="${SITE_URL}" target="_blank" rel="noopener">${SITE_URL}</a></li>
+    </ul></section>
+  </div>`);
+}
+
 /* ---------- MORE ---------- */
 function renderMore(){
   const v=$('#view-more');
   v.innerHTML=`<h2>${esc(t('more'))}</h2>
   <div class="card"><h3>${esc(t('settings'))}</h3><div class="form"><div class="field"><label>${esc(t('orgName'))}</label><input id="s-org" value="${esc(state.settings.org)}" placeholder="Mi guardería"></div>
   <div class="field"><label>${esc(t('language'))}</label><select id="s-lang"><option value="es" ${state.settings.lang!=='en'?'selected':''}>Español</option><option value="en" ${state.settings.lang==='en'?'selected':''}>English</option></select></div></div></div>
+  <div class="card"><h3>Instrucciones</h3><p class="sub" style="margin-bottom:10px">Cómo usar Entrada en el iPad, paso a paso, y los enlaces.</p><button class="btn block" id="helpMore">? Ver instrucciones en español</button></div>
   <div class="card"><h3>${esc(t('pin'))}</h3><p class="sub" style="margin-bottom:10px">${esc(t('pinHint'))}</p><div class="row"><input id="s-pin" class="grow" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="${state.settings.pin?'••••':'1234'}" autocomplete="new-password"><button class="btn" id="setPin">${esc(t('setPin'))}</button>${state.settings.pin?`<button class="btn" id="rmPin">${esc(t('removePin'))}</button><button class="btn primary" id="lockNow">${esc(t('lockNow'))}</button>`:''}</div></div>
   <div class="card"><h3>${esc(t('backup'))}</h3><p class="sub" style="margin-bottom:10px">${esc(t('storedHere'))} ${esc(t('backupHint'))}</p>
   <div class="row"><button class="btn grow" id="expJson">⇩ ${esc(t('exportJson'))}</button><label class="btn grow" style="justify-content:center">⇧ ${esc(t('importJson'))}<input type="file" id="impJson" hidden></label></div>
   <p class="sub" style="margin-top:10px">${state.children.length} ${esc(t('children').toLowerCase())} · ${state.log.length} ${esc(t('log').toLowerCase())} · ${esc(t('lastBackup'))}: ${state.settings.lastBackup?esc(shortDate(state.settings.lastBackup)):esc(t('never'))}</p></div>
   <div class="card"><div class="row">${state.children.some(c=>c.sample)?`<button class="btn" id="clrS">${esc(t('clearSamples'))}</button>`:''}<button class="btn danger" id="resetAll">${esc(t('resetAll'))}</button></div></div>`;
+  $('#helpMore',v).onclick=showHelp;
   $('#setPin',v).onclick=()=>{const p=$('#s-pin',v).value.trim(); if(!/^\d{4,6}$/.test(p)){toast(t('pinFormat'));return;} state.settings.pin=p; unlocked=true; save(); render(); toast(t('pinSaved'));};
   const rm=$('#rmPin',v); if(rm) rm.onclick=()=>{delete state.settings.pin; save(); render(); toast(t('pinRemoved'));};
   const ln=$('#lockNow',v); if(ln) ln.onclick=()=>{unlocked=false; setTab('today');};
