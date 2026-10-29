@@ -166,6 +166,22 @@ th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05
 .sheet header{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .sheet h3{font-size:19px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tabh) + env(safe-area-inset-bottom,0px) + 12px);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:14px;font-weight:600;z-index:30;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.sigpad{position:relative;border:2px dashed var(--line);border-radius:12px;background:#fff;overflow:hidden;touch-action:none;width:fit-content;max-width:100%}
+.sigpad canvas{display:block;touch-action:none;cursor:crosshair}
+.sig-hint{position:absolute;left:0;right:0;top:44%;text-align:center;color:var(--muted);font-size:14px;pointer-events:none}
+.sig-x{position:absolute;left:12px;bottom:22px;color:var(--muted);font-size:14px;pointer-events:none}
+.sig-line{position:absolute;left:30px;right:16px;bottom:28px;border-bottom:1.5px solid var(--line);pointer-events:none}
+.paper{background:#fff;color:#1E1E28;border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:12px}
+.paper-title{font-family:Georgia,'Times New Roman',serif;font-weight:900;color:#1F68B0;font-size:22px;text-align:center;letter-spacing:.02em}
+.paper-meta{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-family:Georgia,serif;font-weight:700;color:#1F68B0;margin:10px 0}
+.paper-meta u{color:#1E1E28;font-weight:400;text-decoration-color:#1F68B0;padding:0 6px}
+.paper-t{border-collapse:collapse;width:100%;font-family:Georgia,serif;font-size:13px;min-width:520px}
+.paper-t th,.paper-t td{border:1px solid #8A8A96;padding:3px 6px;height:30px;text-align:left;vertical-align:middle}
+.paper-t th{font-size:11px;text-align:center}
+.paper-t tr.gap td{border:0;height:10px;padding:0}
+.paper-t td.abs{color:#8A8A96;font-style:italic}
+.paper-t .sigimg{height:24px;width:100%;max-width:170px;display:block}
+.paper-t .typed{font-style:italic}
 .mono{font-family:ui-monospace,Menlo,monospace;font-size:12px;white-space:pre;overflow:auto;background:var(--soft);padding:10px;border-radius:10px;max-height:40vh}
 .empty{text-align:center;color:var(--muted);padding:28px 10px;font-size:14px}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .18s ease-out}@keyframes up{from{transform:translateY(24px);opacity:.6}}}
@@ -241,7 +257,7 @@ step5:'Pestaña Respuestas · Vincular con Hojas de cálculo · Crear una hoja n
 step6:'En la hoja: Archivo · Configuración · Configuración regional: Estados Unidos. Luego Archivo · Compartir · Publicar en la web · elige la pestaña de respuestas y "Valores separados por comas (.csv)" · Publicar · copia el enlace y pégalo abajo.',
 step7:'En el formulario: menú ⋮ · Obtener vínculo prellenado · marca "Entrada" en Tipo · Obtener vínculo · Copiar. Pégalo abajo; el de Salida se crea solo.',
 step8:'Toca "Guardar enlaces", descarga los letreros en PDF, imprímelos y pégalos en la entrada. Las firmas pueden tardar hasta 5 minutos en aparecer.',
-viaForm:'Letrero',shareSave:'Guardar en Archivos o compartir',shareHint:'Elige "Guardar en Archivos" para guardarlo en el iPad, o envíalo por correo o AirDrop.',downloadFile:'Descargar',welcome:'Bienvenida a Entrada',welcomeHint:'Para cargar a tus niños y la conexión con los letreros, toca "Restaurar respaldo" y elige el archivo entrada-datos-iniciales.json. También puedes agregar niños uno por uno.',lastBackup:'Último respaldo',backupOld:'Han pasado {n} días desde el último respaldo. Haz uno en Más → Exportar respaldo.'},
+viaForm:'Letrero',shareSave:'Guardar en Archivos o compartir',shareHint:'Elige "Guardar en Archivos" para guardarlo en el iPad, o envíalo por correo o AirDrop.',downloadFile:'Descargar',welcome:'Bienvenida a Entrada',welcomeHint:'Para cargar a tus niños y la conexión con los letreros, toca "Restaurar respaldo" y elige el archivo entrada-datos-iniciales.json. También puedes agregar niños uno por uno.',lastBackup:'Último respaldo',backupOld:'Han pasado {n} días desde el último respaldo. Haz uno en Más → Exportar respaldo.',signTitle:'Firma del padre o la madre',signHere:'Firme aquí con el dedo',clearSig:'Borrar firma',sheets:'Hojas de firmas',sheetsHint:'Su hoja de entrada y salida de papel, llena con las horas y las firmas de la app. Una página por niño.',sheetPeriod:'Periodo de la hoja',allKids:'Todos los niños',viewSheet:'Ver hoja',sheetPdf:'PDF de la hoja',typedSig:'nombre escrito',signed:'Firmado'},
 en:{today:'Today',children:'Children',scan:'Scan',log:'Log',more:'More',enrolled:'Enrolled',inNow:'Checked in',wentHome:'Gone home',absent:'Absent',notYet:'Not arrived',
 checkIn:'Check in',checkOut:'Check out',markAbsent:'Absent',undoAbsent:'Undo absent',search:'Search by name',addChild:'Add child',editChild:'Edit child',
 firstName:'First name',lastName:'Last name',dob:'Date of birth',status:'Status',active:'Active',inactive:'Inactive',classroom:'Classroom / group',allergies:'Allergies',meds:'Medication',
@@ -275,7 +291,7 @@ step5:'Responses tab · Link to Sheets · Create a new spreadsheet.',
 step6:'In the sheet: File · Settings · Locale: United States. Then File · Share · Publish to web · pick the responses tab and "Comma-separated values (.csv)" · Publish · copy the link and paste it below.',
 step7:'In the form: ⋮ menu · Get pre-filled link · choose "Entrada" for Tipo · Get link · Copy. Paste it below; the sign-out link is made automatically.',
 step8:'Tap "Save links", download the signs as PDF, print them and post them at the entrance. Signatures can take up to 5 minutes to appear.',
-viaForm:'Sign',shareSave:'Save to Files or share',shareHint:'Choose "Save to Files" to keep it on the iPad, or send it by email or AirDrop.',downloadFile:'Download',welcome:'Welcome to Entrada',welcomeHint:'To load your children and the sign connection, tap "Restore backup" and choose the file entrada-datos-iniciales.json. You can also add children one by one.',lastBackup:'Last backup',backupOld:'It has been {n} days since the last backup. Make one in More → Export backup.'}
+viaForm:'Sign',shareSave:'Save to Files or share',shareHint:'Choose "Save to Files" to keep it on the iPad, or send it by email or AirDrop.',downloadFile:'Download',welcome:'Welcome to Entrada',welcomeHint:'To load your children and the sign connection, tap "Restore backup" and choose the file entrada-datos-iniciales.json. You can also add children one by one.',lastBackup:'Last backup',backupOld:'It has been {n} days since the last backup. Make one in More → Export backup.',signTitle:'Parent signature',signHere:'Sign here with your finger',clearSig:'Clear signature',sheets:'Sign-in sheets',sheetsHint:'Your paper sign-in sheet, filled in with the times and signatures from the app. One page per child.',sheetPeriod:'Sheet period',allKids:'All children',viewSheet:'View sheet',sheetPdf:'Sheet PDF',typedSig:'typed name',signed:'Signed'}
 };
 const t=(k,v)=>{let s=(STR[state.settings.lang]||STR.es)[k]||k; if(v) for(const n in v) s=s.replace('{'+n+'}',v[n]); return s;};
 const $=(s,r=document)=>r.querySelector(s);
@@ -298,7 +314,7 @@ const initials=c=>((c.first[0]||'')+(c.last[0]||'')).toUpperCase();
 /* ---------- state ---------- */
 let state=load();
 function blank(){return {version:1,settings:{lang:'es',org:''},children:[],log:[]};}
-function load(){ try{const s=localStorage.getItem(LS_KEY); if(s){const o=JSON.parse(s); if(o&&o.children){ const st=Object.assign(blank(),o); // first run after the real roster was added: replace sample-only data
+function load(){ try{const s=localStorage.getItem(LS_KEY); if(s){const o=JSON.parse(s); if(o&&o.children){ const st=Object.assign(blank(),o); if(st.settings&&st.settings.org==='Isabel Cardenas-Rico') st.settings.org="Chavelita's Child Care"; // first run after the real roster was added: replace sample-only data
   if(!st.rosterLoaded&&st.children.every(c=>c.sample)){ const r=seed(); r.settings.lang=st.settings.lang||r.settings.lang; return r; } return st; } } }catch(e){} return seed(); }
 function save(){ try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){} }
 function newToken(){ return 'ENTRADA-'+uid().toUpperCase()+'-'+Math.random().toString(36).slice(2,8).toUpperCase(); }
@@ -368,6 +384,44 @@ function renderToday(){
   v.querySelectorAll('[data-unabs]').forEach(b=>b.onclick=()=>{state.log=state.log.filter(e=>!(e.childId===b.dataset.unabs&&e.date===tk&&e.absent));save();render();});
 }
 
+/* ---------- SIGNATURES ----------
+   A parent's finger signature is stored as a small SVG path ({w,h,d}) in IndexedDB under "<entryId>:in" or "<entryId>:out".
+   IndexedDB is used instead of localStorage because a few months of signatures would outgrow localStorage. */
+const sigs=(function(){
+  let dbp=null; const mem=new Map();
+  function open(){ if(dbp) return dbp; dbp=new Promise(res=>{ try{ const r=indexedDB.open('entrada-sigs',1); r.onupgradeneeded=()=>r.result.createObjectStore('s'); r.onsuccess=()=>res(r.result); r.onerror=()=>res(null); }catch(e){ res(null); } }); return dbp; }
+  async function write(fn){ const db=await open(); if(!db){ fn(null); return; } await new Promise(res=>{ try{ const t=db.transaction('s','readwrite'); fn(t.objectStore('s')); t.oncomplete=res; t.onerror=res; t.onabort=res; }catch(e){ res(); } }); }
+  return {
+    put:(k,v)=>write(st=>st?st.put(v,k):mem.set(k,v)),
+    del:(...ks)=>write(st=>ks.forEach(k=>st?st.delete(k):mem.delete(k))),
+    clear:()=>write(st=>st?st.clear():mem.clear()),
+    putAll:o=>write(st=>Object.keys(o||{}).forEach(k=>st?st.put(o[k],k):mem.set(k,o[k]))),
+    all:async()=>{ const db=await open(); if(!db) return Object.fromEntries(mem); return new Promise(res=>{ const out={}; try{ const req=db.transaction('s','readonly').objectStore('s').openCursor(); req.onsuccess=()=>{ const c=req.result; if(c){ out[c.key]=c.value; c.continue(); } else res(out); }; req.onerror=()=>res(out); }catch(e){ res(out); } }); }
+  };
+})();
+const validSig=g=>!!(g&&typeof g.d==='string'&&/^[MLl0-9 .\-]+$/.test(g.d)&&g.w>0&&g.h>0);
+function sigSvg(g,cls){ if(!validSig(g)) return ''; return `<svg class="${cls||'sigimg'}" viewBox="${sigBox(g).join(' ')}" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><path d="${g.d}" fill="none" stroke="#1d2b6b" stroke-width="${Math.max(2,sigBox(g)[3]/26).toFixed(1)}" stroke-linecap="round" stroke-linejoin="round"/></svg>`; }
+// tight box around the ink, so a small signature still fills its cell
+function sigBox(g){ const n=(g.d.match(/-?\d+(\.\d+)?/g)||[]).map(Number); let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9; for(let i=0;i+1<n.length;i+=2){ const x=n[i],y=n[i+1]; if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; } if(x0>x1) return [0,0,g.w,g.h]; const m=6; return [x0-m,y0-m,Math.max(20,x1-x0+2*m),Math.max(12,y1-y0+2*m)]; }
+function rdp(p,e){ if(p.length<3) return p; let dm=0,ix=0; const [x1,y1]=p[0],[x2,y2]=p[p.length-1]; const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy)||1;
+  for(let i=1;i<p.length-1;i++){ const d=Math.abs(dy*p[i][0]-dx*p[i][1]+x2*y1-y2*x1)/L; if(d>dm){dm=d;ix=i;} }
+  if(dm>e){ const a=rdp(p.slice(0,ix+1),e), b=rdp(p.slice(ix),e); return a.slice(0,-1).concat(b); } return [p[0],p[p.length-1]]; }
+function strokesToPath(strokes){ return strokes.map(st=>{ const q=st.length>2?rdp(st,.7):st; const r=q.map(([x,y])=>Math.round(x)+' '+Math.round(y)); return 'M'+r[0]+(r.length>1?'L'+r.slice(1).join(' '):' l0.5 0'); }).join(''); }
+function sigPad(root){
+  root.innerHTML=`<div class="sigpad"><canvas></canvas><span class="sig-hint">${esc(t('signHere'))}</span><span class="sig-x">✕</span><span class="sig-line"></span></div><div class="row" style="justify-content:flex-end;margin-top:6px"><button type="button" class="btn sm sig-clear">${esc(t('clearSig'))}</button></div>`;
+  const cv=$('canvas',root), hint=$('.sig-hint',root), ctx=cv.getContext('2d');
+  const W=Math.max(260,Math.min(560,Math.floor(root.clientWidth||320))), H=150, dpr=window.devicePixelRatio||1;
+  cv.width=W*dpr; cv.height=H*dpr; cv.style.width=W+'px'; cv.style.height=H+'px'; cv.setAttribute('aria-label',t('signTitle'));
+  ctx.scale(dpr,dpr); ctx.lineWidth=2.6; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.strokeStyle='#1d2b6b';
+  let strokes=[], cur=null;
+  const pt=e=>{ const r=cv.getBoundingClientRect(); return [(e.clientX-r.left)*W/r.width,(e.clientY-r.top)*H/r.height]; };
+  cv.addEventListener('pointerdown',e=>{ e.preventDefault(); try{ cv.setPointerCapture(e.pointerId); }catch(_){} cur=[pt(e)]; strokes.push(cur); hint.hidden=true; ctx.beginPath(); ctx.moveTo(cur[0][0],cur[0][1]); ctx.lineTo(cur[0][0]+.1,cur[0][1]); ctx.stroke(); });
+  cv.addEventListener('pointermove',e=>{ if(!cur) return; e.preventDefault(); const q=pt(e), l=cur[cur.length-1]; if(Math.abs(q[0]-l[0])+Math.abs(q[1]-l[1])<1.2) return; cur.push(q); ctx.beginPath(); ctx.moveTo(l[0],l[1]); ctx.lineTo(q[0],q[1]); ctx.stroke(); });
+  const end=()=>{ cur=null; }; cv.addEventListener('pointerup',end); cv.addEventListener('pointercancel',end); cv.addEventListener('pointerleave',end);
+  $('.sig-clear',root).onclick=()=>{ strokes=[]; ctx.clearRect(0,0,W,H); hint.hidden=false; };
+  return { empty:()=>!strokes.length, data:()=>({w:W,h:H,d:strokesToPath(strokes)}) };
+}
+
 /* Manual check-in / check-out by staff (corrections, parents without a phone).
    Normal sign-ins come from the wall signs via syncForm(). */
 function startCheck(childId,kind){
@@ -380,12 +434,15 @@ function startCheck(childId,kind){
     <div class="radio">${auth.map((x,i)=>`<label><input type="radio" name="who" value="${esc(x.name)}" ${i===0?'checked':''}><span>${esc(x.name)} <span style="color:var(--muted);font-size:13px">· ${esc(x.relation)}</span></span></label>`).join('')}
     <label><input type="radio" name="who" value="__other" ${auth.length?'':'checked'}><span>${esc(t('other'))}</span></label></div></div>
   <div class="field" id="otherWrap" ${auth.length?'hidden':''}><label>${esc(t('otherName'))}</label><input id="otherName" autocomplete="off"></div>
+  <div class="field"><label>${esc(t('signTitle'))}</label><div id="sigWrap"></div></div>
   <div class="form"><div class="field"><label>${esc(t('time'))}</label><input type="time" id="ckTime" value="${pad(now.getHours())}:${pad(now.getMinutes())}"></div>
   <div class="field"><label>${esc(t('note'))}</label><input id="ckNote"></div></div>
   <button class="btn block ${kind==='in'?'ok':'primary'}" id="ckGo">${esc(kind==='in'?t('confirmIn'):t('confirmOut'))}</button>`,h=>{
     h.querySelectorAll('input[name=who]').forEach(r=>r.onchange=()=>{$('#otherWrap',h).hidden=h.querySelector('input[name=who]:checked').value!=='__other';});
+    const padSig=sigPad($('#sigWrap',h));
     $('#ckGo',h).onclick=()=>{ let who=h.querySelector('input[name=who]:checked')?.value||''; if(who==='__other') who=$('#otherName',h).value.trim();
-      recordEvent(childId,kind,combine(tk,$('#ckTime',h).value||`${pad(now.getHours())}:${pad(now.getMinutes())}`),who,'manual',$('#ckNote',h).value.trim());
+      const id=recordEvent(childId,kind,combine(tk,$('#ckTime',h).value||`${pad(now.getHours())}:${pad(now.getMinutes())}`),who,'manual',$('#ckNote',h).value.trim());
+      if(id&&!padSig.empty()) sigs.put(id+':'+kind,padSig.data());
       save(); closeSheet(); render(); toast(kind==='in'?t('checkedIn'):t('checkedOut')); };
   });
 }
@@ -393,10 +450,10 @@ function startCheck(childId,kind){
 function recordEvent(childId,kind,iso,who,method,note){
   const key=dateKey(new Date(iso));
   if(kind==='in'){ state.log=state.log.filter(e=>!(e.childId===childId&&e.date===key&&e.absent));
-    state.log.push({id:uid(),childId,date:key,inAt:iso,outAt:null,inBy:who,outBy:'',inMethod:method,outMethod:'',absent:false,note:note||''}); return; }
+    const id=uid(); state.log.push({id,childId,date:key,inAt:iso,outAt:null,inBy:who,outBy:'',inMethod:method,outMethod:'',absent:false,note:note||''}); return id; }
   const open=state.log.filter(e=>e.childId===childId&&e.date===key&&e.inAt&&!e.outAt&&e.inAt<=iso).sort((a,b)=>b.inAt.localeCompare(a.inAt))[0];
-  if(open){ open.outAt=iso; open.outBy=who; open.outMethod=method; if(note) open.note=(open.note?open.note+' · ':'')+note; }
-  else state.log.push({id:uid(),childId,date:key,inAt:null,outAt:iso,inBy:'',outBy:who,inMethod:'',outMethod:method,absent:false,note:note||''});
+  if(open){ open.outAt=iso; open.outBy=who; open.outMethod=method; if(note) open.note=(open.note?open.note+' · ':'')+note; return open.id; }
+  const id=uid(); state.log.push({id,childId,date:key,inAt:null,outAt:iso,inBy:'',outBy:who,inMethod:'',outMethod:method,absent:false,note:note||''}); return id;
 }
 
 /* ---------- CHILDREN ---------- */
@@ -429,7 +486,7 @@ function editChild(id){
     const bindDel=()=>cl.querySelectorAll('.c-del').forEach(b=>b.onclick=()=>b.closest('.contact').remove());
     bindDel();
     $('#addContact',h).onclick=()=>{cl.insertAdjacentHTML('beforeend',contactRow({id:uid(),name:'',relation:'',phone:'',email:'',authorized:true}));bindDel();cl.lastElementChild.querySelector('input').focus();};
-    if(id){ $('#delChild',h).onclick=()=>confirmBox(t('deleteConfirm',{name:c.first+' '+c.last}),()=>{state.children=state.children.filter(x=>x.id!==id);state.log=state.log.filter(e=>e.childId!==id);save();render();toast(t('deleted'));}); }
+    if(id){ $('#delChild',h).onclick=()=>confirmBox(t('deleteConfirm',{name:c.first+' '+c.last}),()=>{state.children=state.children.filter(x=>x.id!==id);sigs.del(...state.log.filter(e=>e.childId===id).flatMap(e=>[e.id+':in',e.id+':out']));state.log=state.log.filter(e=>e.childId!==id);save();render();toast(t('deleted'));}); }
     $('#saveChild',h).onclick=()=>{ const g=k=>$('#f-'+k,h).value.trim(); if(!g('first')||!g('last')){toast(t('required'));return;}
       Object.assign(c,{first:g('first'),last:g('last'),dob:g('dob'),status:$('#f-status',h).value,classroom:g('classroom'),allergies:g('allergies'),meds:g('meds'),diet:g('diet'),notes:$('#f-notes',h).value.trim(),tags:g('tags').split(',').map(s=>s.trim()).filter(Boolean)});
       c.contacts=[...cl.querySelectorAll('.contact')].map(el=>({id:el.dataset.cid,name:$('.c-name',el).value.trim(),relation:$('.c-rel',el).value.trim(),phone:$('.c-phone',el).value.trim(),email:$('.c-email',el).value.trim(),authorized:$('.c-auth',el).checked})).filter(x=>x.name);
@@ -543,6 +600,10 @@ function renderLog(){
   <div class="card"><div class="row spread"><h3 style="margin:0">${esc(t('date'))}</h3><button class="btn sm" id="addEntry">+ ${esc(t('addEntry'))}</button></div>
   ${dayRows.length?dayRows.map(({c,es})=>`<div style="margin-top:10px"><div class="name">${esc(fullName(c))}</div>${es.map(e=>e.absent?`<div class="entry" data-edit="${e.id}"><span class="pill absent">${esc(t('absent'))}</span><div class="who">${esc(e.note||'')}</div><button class="btn sm">✎</button></div>`:
    `<div class="entry" data-edit="${e.id}"><div class="t num">${fmtTime(e.inAt)} → ${e.outAt?fmtTime(e.outAt):`<span class="pill in">${esc(t('stillIn'))}</span>`}</div><div class="who">${e.inBy?esc(t('droppedBy'))+': '+esc(e.inBy):''}${e.outBy?' · '+esc(t('pickedBy'))+': '+esc(e.outBy):''}${e.inMethod==='qr'||e.outMethod==='qr'?` · <span class="pill qr">${esc(t('viaForm'))}</span>`:''}${e.note?' · '+esc(e.note):''}${e.outAt?` · <span class="num">${hoursBetween(e.inAt,e.outAt).toFixed(2)} h</span>`:''}</div><button class="btn sm">✎</button></div>`).join('')}</div>`).join(''):`<div class="empty">${esc(t('noEntries'))}</div>`}</div>
+  <div class="card"><h3>${esc(t('sheets'))}</h3><p class="sub" style="margin-bottom:10px">${esc(t('sheetsHint'))}</p>
+  <div class="form"><div class="field"><label for="sh-period">${esc(t('sheetPeriod'))}</label><select id="sh-period">${sheetPeriods().map(k=>`<option value="${k}" ${k===sheetPeriod?'selected':''}>${esc(periodLabel(k))} (${esc(shortMD(periodDays(k)[0][0]))} – ${esc(shortMD(periodDays(k)[4][4]))})</option>`).join('')}</select></div>
+  <div class="field"><label for="sh-kid">${esc(t('child'))}</label><select id="sh-kid"><option value="__all">${esc(t('allKids'))}</option>${kids.filter(c=>c.status==='active').map(c=>`<option value="${c.id}" ${c.id===sheetKid?'selected':''}>${esc(fullName(c))}</option>`).join('')}</select></div></div>
+  <div class="row" style="margin-top:10px"><button class="btn" id="sh-view">${esc(t('viewSheet'))}</button><button class="btn primary" id="sh-pdf">⇩ ${esc(t('sheetPdf'))}</button></div></div>
   <div class="card"><h3>${esc(t('reports'))}</h3>
   <div class="row"><select id="rp-mode" style="width:auto"><option value="day" ${reportMode==='day'?'selected':''}>${esc(t('thisDay'))}</option><option value="month" ${reportMode==='month'?'selected':''}>${esc(t('thisMonth'))}</option><option value="custom" ${reportMode==='custom'?'selected':''}>${esc(t('customRange'))}</option></select>
   <input type="date" id="rp-from" value="${reportFrom}" ${reportMode==='custom'?'':'hidden'} style="width:auto"><input type="date" id="rp-to" value="${reportTo}" ${reportMode==='custom'?'':'hidden'} style="width:auto"></div>
@@ -557,6 +618,8 @@ function renderLog(){
   $('#rp-mode',v).onchange=e=>{reportMode=e.target.value; if(reportMode==='custom'&&!reportFrom){ const [a,b]=reportRange(); reportFrom=a; reportTo=b; } renderLog();};
   $('#rp-from',v).onchange=e=>{reportFrom=e.target.value||reportFrom;renderLog();}; $('#rp-to',v).onchange=e=>{reportTo=e.target.value||reportTo;renderLog();};
   $('#xPdf',v).onclick=()=>exportPdf(r); $('#xXlsx',v).onclick=()=>exportXlsx(r); $('#xCsv',v).onclick=()=>exportCsv(r);
+  $('#sh-period',v).onchange=e=>{ sheetPeriod=+e.target.value; }; $('#sh-kid',v).onchange=e=>{ sheetKid=e.target.value; };
+  $('#sh-view',v).onclick=()=>viewSheets(sheetPeriod,sheetKid); $('#sh-pdf',v).onclick=()=>exportSheetsPdf(sheetPeriod,sheetKid);
   v.querySelectorAll('[data-edit]').forEach(el=>el.onclick=()=>editEntry(el.dataset.edit));
 }
 function editEntry(id){
@@ -575,7 +638,7 @@ function editEntry(id){
     $('#e-save',h).onclick=()=>{ e.childId=$('#e-child',h).value; e.date=$('#e-date',h).value||e.date; e.absent=$('#e-abs',h).checked; const i=$('#e-in',h).value,o=$('#e-out',h).value;
       e.inAt=i&&!e.absent?combine(e.date,i):null; e.outAt=o&&!e.absent?combine(e.date,o):null; e.inBy=$('#e-inby',h).value.trim(); e.outBy=$('#e-outby',h).value.trim(); e.note=$('#e-note',h).value.trim();
       if(!id) state.log.push(e); save(); closeSheet(); logDay=e.date; render(); toast(t('saved')); };
-    if(id) $('#e-del',h).onclick=()=>{state.log=state.log.filter(x=>x.id!==id);save();closeSheet();render();toast(t('deleted'));};
+    if(id) $('#e-del',h).onclick=()=>{state.log=state.log.filter(x=>x.id!==id);sigs.del(id+':in',id+':out');save();closeSheet();render();toast(t('deleted'));};
   });
 }
 /* ---------- REPORTS (PDF · Excel · CSV) ---------- */
@@ -669,7 +732,93 @@ async function offerFile(name,data,mime){
   plain();
 }
 
-function importBackupFile(f){ if(!f) return; const r=new FileReader(); r.onload=()=>{ try{ const o=JSON.parse(r.result); if(!o||!Array.isArray(o.children)||!Array.isArray(o.log)) throw 0; state=Object.assign(blank(),o); state.rosterLoaded=true; save(); render(); toast(t('importDone')); autoSync(); }catch(err){ toast(t('importBad')); } }; r.readAsText(f); }
+function importBackupFile(f){ if(!f) return; const r=new FileReader(); r.onload=async()=>{ try{ const o=JSON.parse(r.result); if(!o||!Array.isArray(o.children)||!Array.isArray(o.log)) throw 0;
+    const incoming=o.sigs&&typeof o.sigs==='object'?o.sigs:null; delete o.sigs; state=Object.assign(blank(),o); state.rosterLoaded=true;
+    if(state.settings&&state.settings.org==='Isabel Cardenas-Rico') state.settings.org="Chavelita's Child Care";
+    if(incoming){ const ok={}; Object.keys(incoming).forEach(k=>{ if(/^[\w-]+:(in|out)$/.test(k)&&validSig(incoming[k])) ok[k]=incoming[k]; }); await sigs.putAll(ok); }
+    save(); render(); toast(t('importDone')); autoSync(); }catch(err){ toast(t('importBad')); } }; r.readAsText(f); }
+
+/* ---------- SIGN-IN SHEETS (her paper form, digitized) ----------
+   Her paper sheets cover 5 weeks, Monday to Friday: 07/06–08/07/2026, 08/10–09/11/2026, ...
+   Periods are counted in 35-day steps from Monday 07/06/2026. The sheet itself stays in English, like the paper. */
+const SHEET_ANCHOR='2026-07-06';
+const MONTHS_EN=['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+function periodOf(key){ return Math.floor(Math.round((fromKey(key)-fromKey(SHEET_ANCHOR))/864e5)/35); }
+function periodDays(k){ const s=fromKey(SHEET_ANCHOR); s.setDate(s.getDate()+35*k); const weeks=[]; for(let w=0;w<5;w++){ const wk=[]; for(let i=0;i<5;i++){ const d=new Date(s); d.setDate(s.getDate()+w*7+i); wk.push(dateKey(d)); } weeks.push(wk); } return weeks; }
+function periodLabel(k){ const w=periodDays(k), a=fromKey(w[0][0]), b=fromKey(w[4][4]);
+  if(a.getFullYear()!==b.getFullYear()) return `${MONTHS_EN[a.getMonth()]} ${a.getFullYear()} – ${MONTHS_EN[b.getMonth()]} ${b.getFullYear()}`;
+  return a.getMonth()===b.getMonth()?`${MONTHS_EN[a.getMonth()]} ${b.getFullYear()}`:`${MONTHS_EN[a.getMonth()]} – ${MONTHS_EN[b.getMonth()]} ${b.getFullYear()}`; }
+const shortMD=k=>k.slice(5,7)+'/'+k.slice(8,10);
+let sheetPeriod=periodOf(todayKey()), sheetKid='__all';
+function sheetPeriods(){ const now=periodOf(todayKey()); const first=Math.min(now-1, ...state.log.map(e=>periodOf(e.date))); const out=[]; for(let k=now+1;k>=Math.max(first,now-24);k--) out.push(k); return out; }
+const tShort=iso=>{ const d=new Date(iso); let h=d.getHours(); const ap=h<12?'AM':'PM'; h=h%12||12; return h+':'+pad(d.getMinutes())+' '+ap; };
+// one row per weekday: first check-in and last check-out of the day, with who signed and how
+function sheetRows(childId,k,allSigs){
+  return periodDays(k).map(week=>week.map(day=>{
+    const es=entriesFor(childId,day);
+    if(es.some(e=>e.absent)) return {day,absent:true};
+    const ins=es.filter(e=>e.inAt).sort((a,b)=>a.inAt.localeCompare(b.inAt)), outs=es.filter(e=>e.outAt).sort((a,b)=>a.outAt.localeCompare(b.outAt));
+    const fi=ins[0], lo=outs[outs.length-1];
+    return {day,
+      inT:fi?tShort(fi.inAt):'', inBy:fi?fi.inBy:'', inQr:!!(fi&&fi.inMethod==='qr'), inSig:fi?allSigs[fi.id+':in']:null,
+      outT:lo?tShort(lo.outAt):'', outBy:lo?lo.outBy:'', outQr:!!(lo&&lo.outMethod==='qr'), outSig:lo?allSigs[lo.id+':out']:null};
+  }));
+}
+function sigCell(sig,name,qr){ if(validSig(sig)) return sigSvg(sig); if(name) return `<span class="typed">${esc(name)}</span>${qr?' <span class="pill qr">QR</span>':''}`; return ''; }
+async function viewSheets(k,kidSel){
+  const all=await sigs.all();
+  const kids=kidSel==='__all'?state.children.filter(c=>c.status==='active').sort(byName):[childById(kidSel)].filter(Boolean);
+  const title=(state.settings.org||"Chavelita's Child Care").toUpperCase();
+  const html=kids.map(c=>{ const rows=sheetRows(c.id,k,all);
+    return `<div class="paper"><div class="paper-title">${esc(title)}</div>
+      <div class="paper-meta"><span>CHILD NAME <u>${esc(c.first+' '+c.last)}</u></span><span>${esc(periodLabel(k))}</span></div>
+      <div class="tablewrap"><table class="paper-t"><thead><tr><th>DATE</th><th>TIME IN</th><th>PARENT SIGNATURE</th><th>TIME OUT</th><th>PARENT SIGNATURE</th></tr></thead>
+      <tbody>${rows.map((wk,wi)=>(wi?'<tr class="gap"><td colspan="5"></td></tr>':'')+wk.map(r=>r.absent?`<tr><td class="num">${shortMD(r.day)}</td><td colspan="4" class="abs">ABSENT</td></tr>`:
+        `<tr><td class="num">${shortMD(r.day)}</td><td class="num">${esc(r.inT)}</td><td>${sigCell(r.inSig,r.inBy,r.inQr)}</td><td class="num">${esc(r.outT)}</td><td>${sigCell(r.outSig,r.outBy,r.outQr)}</td></tr>`).join('')).join('')}</tbody></table></div></div>`; }).join('');
+  sheet(`<header><h3>${esc(t('sheets'))} · ${esc(periodLabel(k))}</h3><button class="btn sm" data-close>✕</button></header>${html||`<div class="empty">${esc(t('noActive'))}</div>`}<button class="btn primary block" id="sh-pdf2">⇩ ${esc(t('sheetPdf'))}</button>`,h=>{ $('#sh-pdf2',h).onclick=()=>exportSheetsPdf(k,kidSel); });
+}
+// signature -> PNG for the PDF, fitted into a w x h box (points), drawn at 4x for print sharpness
+function sigPng(g,w,h){ const [bx,by,bw,bh]=sigBox(g); const S=4, cv=document.createElement('canvas'); cv.width=Math.round(w*S); cv.height=Math.round(h*S);
+  const ctx=cv.getContext('2d'); const sc=Math.min(cv.width/bw,cv.height/bh); const ox=(cv.width-bw*sc)/2, oy=(cv.height-bh*sc)/2;
+  ctx.setTransform(sc,0,0,sc,ox-bx*sc,oy-by*sc); ctx.lineWidth=Math.max(1.6,3.2/sc); ctx.lineCap='round'; ctx.lineJoin='round'; ctx.strokeStyle='#1d2b6b'; ctx.stroke(new Path2D(g.d));
+  return cv.toDataURL('image/png'); }
+async function exportSheetsPdf(k,kidSel){
+  toast(t('preparing'));
+  try{ await loadLib('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',()=>window.jspdf&&window.jspdf.jsPDF); }catch(err){ toast(t('exportFail')); return; }
+  const all=await sigs.all();
+  const kids=kidSel==='__all'?state.children.filter(c=>c.status==='active').sort(byName):[childById(kidSel)].filter(Boolean);
+  if(!kids.length){ toast(t('noActive')); return; }
+  const doc=new window.jspdf.jsPDF({unit:'pt',format:'letter'}); const M=40, W=612-2*M;
+  const cols=[54,68,170,68,172]; const xs=cols.reduce((a,c,i)=>(a.push((a[i-1]||M)+(i?cols[i-1]:0)),a),[]).map((x,i)=>i?x:M);
+  const title=(state.settings.org||"Chavelita's Child Care").toUpperCase(), blue=[31,104,176];
+  kids.forEach((c,ci)=>{ if(ci) doc.addPage();
+    const rows=sheetRows(c.id,k,all);
+    doc.setTextColor(...blue); doc.setFont('times','bold'); doc.setFontSize(24); doc.text(title,306,62,{align:'center'});
+    doc.setFontSize(13); doc.text('CHILD NAME',M,100); const nx=M+doc.getTextWidth('CHILD NAME ')+2;
+    doc.setTextColor(30,30,40); doc.setFont('times','normal'); doc.text(c.first+' '+c.last,nx+4,98); doc.setDrawColor(...blue); doc.setLineWidth(.8); doc.line(nx,101,nx+190,101);
+    doc.setTextColor(...blue); doc.setFont('times','bold'); doc.text(periodLabel(k),M+W,100,{align:'right'});
+    let y=118; const rh=22, hh=22; doc.setDrawColor(90,90,100); doc.setLineWidth(.6); doc.setTextColor(30,30,40); doc.setFontSize(9.5);
+    ['DATE','TIME IN','PARENT SIGNATURE','TIME OUT','PARENT SIGNATURE'].forEach((hd,i)=>{ doc.rect(xs[i],y,cols[i],hh); doc.text(hd,xs[i]+cols[i]/2,y+14.5,{align:'center'}); }); y+=hh;
+    rows.forEach((wk,wi)=>{ if(wi) y+=12;
+      wk.forEach(r=>{ doc.setFont('times','normal'); doc.setFontSize(11); doc.setTextColor(30,30,40);
+        cols.forEach((w,i)=>doc.rect(xs[i],y,w,rh));
+        doc.text(shortMD(r.day),xs[0]+6,y+15);
+        if(r.absent){ doc.setTextColor(140,140,150); doc.setFont('times','italic'); doc.text('ABSENT',xs[1]+6,y+15); }
+        else{
+          if(r.inT) doc.text(r.inT,xs[1]+6,y+15);
+          if(r.outT) doc.text(r.outT,xs[3]+6,y+15);
+          [[r.inSig,r.inBy,r.inQr,2],[r.outSig,r.outBy,r.outQr,4]].forEach(([g,name,qr,i])=>{
+            if(validSig(g)){ try{ doc.addImage(sigPng(g,cols[i]-10,rh-4),'PNG',xs[i]+5,y+2,cols[i]-10,rh-4); }catch(e){} }
+            else if(name){ doc.setFont('times','italic'); doc.setFontSize(11); doc.text(name+(qr?'  (QR)':''),xs[i]+6,y+15,{maxWidth:cols[i]-10}); doc.setFont('times','normal'); }
+          });
+        }
+        y+=rh; }); });
+    doc.setFontSize(8); doc.setTextColor(140,140,150); doc.setFont('helvetica','normal');
+    doc.text(`Entrada · ${new Date().toLocaleDateString('en-US')}`,M,770);
+  });
+  const who=kids.length===1?(kids[0].first+'-'+kids[0].last).replace(/[^\w-]+/g,''):'todos';
+  offerFile(`hoja-firmas-${periodDays(k)[0][0]}-${who}.pdf`,doc.output('blob'),'application/pdf');
+}
 
 /* ---------- MORE ---------- */
 function renderMore(){
@@ -687,10 +836,10 @@ function renderMore(){
   const ln=$('#lockNow',v); if(ln) ln.onclick=()=>{unlocked=false; setTab('today');};
   $('#s-org',v).onchange=e=>{state.settings.org=e.target.value.trim();save();render();};
   $('#s-lang',v).onchange=e=>{state.settings.lang=e.target.value;save();render();};
-  $('#expJson',v).onclick=()=>{ state.settings.lastBackup=todayKey(); save(); offerFile(`entrada-backup-${todayKey()}.json`,JSON.stringify(state,null,2),'application/json'); renderMore(); };
+  $('#expJson',v).onclick=async()=>{ state.settings.lastBackup=todayKey(); save(); const all=await sigs.all(); offerFile(`entrada-backup-${todayKey()}.json`,JSON.stringify(Object.assign({},state,{sigs:all}),null,2),'application/json'); renderMore(); };
   $('#impJson',v).onchange=e=>{ importBackupFile(e.target.files[0]); e.target.value=''; };
   const cs=$('#clrS',v); if(cs) cs.onclick=()=>confirmBox(t('clearSamplesConfirm'),clearSamples);
-  $('#resetAll',v).onclick=()=>confirmBox(t('resetConfirm'),()=>{state=blank();save();render();toast(t('deleted'));});
+  $('#resetAll',v).onclick=()=>confirmBox(t('resetConfirm'),()=>{state=blank();sigs.clear();save();render();toast(t('deleted'));});
 }
 
 /* ---------- boot ---------- */
